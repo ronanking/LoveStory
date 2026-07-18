@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>MacroMatch</title>
+<meta name="description" content="MacroMatch — the Australian macro tracker that answers what you can eat next.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ---------- the ledger system: bone, ink, one forest accent ---------- */
+  :root{
+    --bone:#F7F7F3; --paper:#FFFFFF; --ink:#111C16; --sub:#6E7671; --faint:#9AA29C;
+    --hair:#E7E8E2; --hair-2:#D8DAD2;
+    --forest:#1E4D36; --forest-deep:#1538274; --fit:#2E7D4F; --fit-soft:#EAF2EC;
+    --alert:#B0483F; --alert-soft:#F6EAE8; --warn:#8A6414; --warn-soft:#F7F0DE;
+    --dot-p:#C2536A; --dot-c:#C08E2B; --dot-f:#3E7F7F;
+    --disp:'Bricolage Grotesque',system-ui,sans-serif;
+    --body:'Space Grotesk',system-ui,sans-serif;
+    --mono:'Space Mono',monospace;
+    --r:14px; --r-lg:22px;
+    --dur:200ms; --ease:cubic-bezier(.2,.7,.3,1);
+    --sab:env(safe-area-inset-bottom,0px);
+    --nav-h:78px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:#E9EAE4;font-family:var(--body);color:var(--ink);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .app{max-width:480px;margin:0 auto;min-height:100dvh;background:var(--bone);position:relative;
+       box-shadow:0 0 50px rgba(17,28,22,.10);padding-bottom:calc(var(--nav-h) + var(--sab) + 16px)}
+  .pad{padding-left:22px;padding-right:22px}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  button{font-family:var(--body);color:var(--ink)}
+  :focus-visible{outline:3px solid var(--forest);outline-offset:2px;border-radius:4px}
+  @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  .icon{width:20px;height:20px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+  .icon.sm{width:15px;height:15px}
+  .press{transition:transform var(--dur) var(--ease)}
+  .press:active{transform:scale(.97)}
+
+  /* dotted leader rows — the signature */
+  .ledger-row{display:flex;align-items:baseline;gap:10px;padding:7px 0}
+  .ledger-row .leader{flex:1;border-bottom:2px dotted var(--hair-2);transform:translateY(-4px)}
+  .ledger-row .k{font-size:13.5px;color:var(--sub)}
+  .ledger-row .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:14.5px}
+  .ledger-row .dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;transform:translateY(-1px)}
+
+  .label{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+  .rule{border:none;border-top:1px solid var(--hair);margin:0}
+
+  /* ---------- top ---------- */
+  .top{display:flex;justify-content:center;padding:18px 0 6px}
+  .wordmark{display:inline-flex;align-items:center;gap:8px;font-family:var(--disp);font-weight:800;font-size:16px;letter-spacing:-.01em}
+  .wordmark .mark{display:inline-flex;align-items:flex-end;gap:2px;height:14px}
+  .wordmark .mark span{width:4px;border-radius:2px}
+  .wordmark .mark .b1{height:60%;background:var(--dot-p)}
+  .wordmark .mark .b2{height:100%;background:var(--dot-c)}
+  .wordmark .mark .b3{height:40%;background:var(--dot-f)}
+
+  /* ---------- home / today ---------- */
+  .greet-block{text-align:center;padding:26px 0 8px}
+  .greet-line{font-size:15px;color:var(--sub)}
+  .greet-line .name-btn{border:none;background:none;font:inherit;font-weight:700;color:var(--ink);cursor:pointer;
+                        display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 4px}
+  .greet-line .name-btn .icon{width:12px;height:12px;color:var(--faint)}
+  .big-remain{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:64px;line-height:1;letter-spacing:-.03em;margin:8px 0 2px}
+  .big-remain small{font-size:15px;font-weight:400;color:var(--sub);letter-spacing:0}
+  .greet-q{font-family:var(--disp);font-weight:600;font-size:17px;color:var(--sub);margin-top:6px}
+  .greet-q b{color:var(--ink);font-weight:800}
+
+  .card{background:var(--paper);border:1px solid var(--hair);border-radius:var(--r-lg);padding:18px 20px;margin-top:14px}
+  .card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .info-btn{width:28px;height:28px;min-width:28px;border-radius:50%;border:1px solid var(--hair);background:var(--bone);
+            color:var(--sub);font-family:var(--mono);font-size:12px;cursor:pointer}
+  .info-txt{display:none;font-size:12.5px;color:var(--sub);line-height:1.55;background:var(--bone);
+            border-radius:10px;padding:10px 12px;margin:8px 0 2px}
+  .info-txt.open{display:block}
+
+  /* macro ledger */
+  .macro-bars{margin-top:4px}
+  .mini-track{height:3px;background:var(--hair);border-radius:2px;margin:2px 0 8px;overflow:hidden}
+  .mini-track i{display:block;height:100%;background:var(--ink);border-radius:2px;transition:width .3s var(--ease)}
+
+  /* protein pressure — compact dial strip */
+  .pp-strip{display:flex;align-items:center;gap:14px;margin-top:6px}
+  .pp-num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:34px;line-height:1}
+  .pp-num small{display:block;font-size:10.5px;color:var(--faint);font-weight:400;letter-spacing:.05em;margin-top:3px}
+  .pp-scale{flex:1}
+  .pp-segs{display:flex;gap:3px;height:8px}
+  .pp-segs span{flex:1;border-radius:3px;background:var(--hair)}
+  .pp-segs span.on{background:var(--forest)}
+  .pp-segs span.on.hot{background:var(--alert)}
+  .pp-band{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:5px;letter-spacing:.03em}
+  .pp-read{font-size:13px;margin-top:10px}
+  .pp-read b{font-weight:700}
+
+  /* diary */
+  .meal{padding:4px 0 2px}
+  .meal-head{display:flex;justify-content:space-between;align-items:center;min-height:44px}
+  .meal-head h3{font-family:var(--disp);font-weight:800;font-size:16px}
+  .meal-head .tot{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;color:var(--sub)}
+  .entry{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px dotted var(--hair-2)}
+  .entry .e-main{flex:1;min-width:0}
+  .entry .e-main h4{font-size:14px;font-weight:500}
+  .entry .e-main span{font-family:var(--mono);font-size:11px;color:var(--sub)}
+  .entry .e-kcal{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:14px}
+  .entry .e-del{width:34px;height:34px;border-radius:50%;border:1px solid var(--hair);background:var(--paper);color:var(--faint);cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .meal-add{display:inline-flex;align-items:center;gap:6px;min-height:44px;border:none;background:none;cursor:pointer;
+            color:var(--forest);font-weight:700;font-size:13.5px;padding:0 4px}
+  .empty-line{font-size:13px;color:var(--faint);padding:6px 0 8px;font-style:italic}
+
+  /* ---------- profile ---------- */
+  .prof-name{display:flex;align-items:center;gap:12px;padding:8px 0 4px}
+  .avatar{width:52px;height:52px;border-radius:50%;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:center;
+          font-family:var(--disp);font-weight:800;font-size:20px}
+  .prof-name .who h3{font-family:var(--disp);font-weight:800;font-size:20px}
+  .prof-name .who button{border:none;background:none;color:var(--forest);font-weight:700;font-size:13px;cursor:pointer;min-height:32px;padding:0}
+  .t-edit{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .t-field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
+  .t-field input{width:100%;min-height:48px;font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:18px;
+                 padding:0 14px;border-radius:var(--r);border:1.5px solid var(--hair);background:var(--bone);color:var(--ink)}
+  .balance{display:flex;align-items:flex-start;gap:8px;font-size:13px;border-radius:10px;padding:10px 12px;margin-top:12px}
+  .balance.ok{background:var(--fit-soft);color:var(--fit)}
+  .balance.gap{background:var(--warn-soft);color:var(--warn)}
+  .balance .icon{margin-top:1px}
+
+  /* ---------- EAT sheet (flagship) ---------- */
+  .sheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;visibility:hidden}
+  .sheet.open{visibility:visible}
+  .sheet .scrim{position:absolute;inset:0;background:rgba(10,16,12,.5);opacity:0;transition:opacity var(--dur) var(--ease)}
+  .sheet.open .scrim{opacity:1}
+  .sheet-in{position:relative;width:100%;max-width:480px;height:92dvh;background:var(--bone);border-radius:24px 24px 0 0;
+            display:flex;flex-direction:column;transform:translateY(100%);transition:transform 280ms var(--ease)}
+  .sheet.open .sheet-in{transform:none}
+  .sheet-head{padding:14px 22px 12px;border-bottom:1px solid var(--hair)}
+  .sheet-grab{width:36px;height:4px;border-radius:2px;background:var(--hair-2);margin:0 auto 12px}
+  .sheet-title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .sheet-title-row h2{font-family:var(--disp);font-weight:800;font-size:22px;line-height:1.15;letter-spacing:-.02em}
+  .sheet-close{width:40px;height:40px;border-radius:50%;border:1px solid var(--hair);background:var(--paper);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sub)}
+  .sheet-sub{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;color:var(--sub);margin-top:6px}
+  .search-row{margin-top:12px;position:relative}
+  .search-row .icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--faint)}
+  .search-row input{width:100%;min-height:50px;font-size:16px;font-family:var(--body);padding:0 16px 0 42px;
+                    border-radius:var(--r);border:1.5px solid var(--hair);background:var(--paper)}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding:12px 22px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;min-height:38px;padding:0 15px;display:inline-flex;align-items:center;border-radius:999px;
+        font-size:13px;font-weight:600;border:1.5px solid var(--hair);background:var(--paper);color:var(--sub);cursor:pointer}
+  .chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .sheet-list{flex:1;overflow-y:auto;padding:0 22px 30px}
+  .food{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:none;background:none;cursor:pointer;
+        padding:13px 0;border-bottom:1px dotted var(--hair-2)}
+  .food:active{transform:scale(.99)}
+  .food .f-state{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .food.pace .f-state{background:var(--forest);color:#fff}
+  .food.fits .f-state{background:var(--fit-soft);color:var(--fit)}
+  .food.over{opacity:.4}
+  .food.over .f-state{background:var(--alert-soft);color:var(--alert)}
+  .food .f-main{flex:1;min-width:0}
+  .food .f-main h4{font-size:15px;font-weight:600;line-height:1.25}
+  .food .f-main span{display:block;font-family:var(--mono);font-size:11px;color:var(--sub);margin-top:2px}
+  .food .f-nums{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--sub)}
+  .food .f-nums b{display:block;font-size:16px;color:var(--ink)}
+  .list-note{font-family:var(--mono);font-size:11px;color:var(--faint);padding:12px 0 4px;text-align:center}
+  .no-fit{padding:26px 10px;text-align:center;color:var(--sub);font-size:14px}
+
+  /* toast */
+  .toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(var(--nav-h) + var(--sab) + 18px);
+         z-index:70;background:var(--ink);color:#fff;border-radius:999px;padding:11px 20px;font-size:13.5px;font-weight:600;
+         display:flex;align-items:center;gap:8px;opacity:0;pointer-events:none;transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease);max-width:88%}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast .icon{color:#9CD3B2}
+
+  /* ---------- bottom nav ---------- */
+  .navbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;pointer-events:none}
+  .nav-in{pointer-events:auto;width:100%;max-width:480px;background:color-mix(in srgb,var(--paper) 96%,transparent);
+          backdrop-filter:blur(10px);border-top:1px solid var(--hair);
+          display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+          padding:8px 30px calc(8px + var(--sab));min-height:var(--nav-h)}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;min-height:52px;min-width:64px;justify-content:center;
+            border:none;background:none;cursor:pointer;color:var(--faint);font-size:11px;font-weight:600;border-radius:var(--r)}
+  .nav-item.active{color:var(--ink)}
+  .nav-item.active .icon{stroke-width:2.2}
+  .eat-btn{width:66px;height:66px;border-radius:22px;border:none;cursor:pointer;background:var(--forest);color:#fff;
+           display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+           box-shadow:0 10px 24px rgba(30,77,54,.35);transform:translateY(-14px);transition:transform var(--dur) var(--ease)}
+  .eat-btn:active{transform:translateY(-14px) scale(.95)}
+  .eat-btn .icon{width:24px;height:24px}
+  .eat-btn span{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase}
+
+  /* name sheet */
+  .mini-dialog{position:fixed;inset:0;z-index:80;display:none;align-items:flex-end;justify-content:center}
+  .mini-dialog.open{display:flex}
+  .mini-dialog .scrim{position:absolute;inset:0;background:rgba(10,16,12,.5)}
+  .mini-sheet{position:relative;width:100%;max-width:480px;background:var(--paper);border-radius:22px 22px 0 0;padding:22px 22px calc(22px + var(--sab))}
+  .mini-sheet h3{font-family:var(--disp);font-weight:800;font-size:18px;margin-bottom:4px}
+  .mini-sheet p{font-size:13px;color:var(--sub);margin-bottom:14px}
+  .mini-sheet input{width:100%;min-height:50px;font-size:16px;font-family:var(--body);padding:0 16px;border-radius:var(--r);border:1.5px solid var(--hair);margin-bottom:12px;background:var(--bone)}
+  .mini-sheet .row{display:flex;gap:10px}
+  .mini-sheet .btn{flex:1;min-height:50px;border:none;border-radius:var(--r);font-weight:700;font-size:15px;cursor:pointer}
+  .mini-sheet .btn.save{background:var(--forest);color:#fff}
+  .mini-sheet .btn.cancel{background:var(--bone);border:1.5px solid var(--hair)}
+
+  .view{display:none}
+  .view.active{display:block}
+  .fine{font-size:11px;color:var(--faint);line-height:1.6;padding:20px 0 6px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5 9.5 18 20 6.5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4.5 4.5"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4h9a3 3 0 0 1 3 3v13H7a3 3 0 0 0-3 3V4z"/><path d="M16 20h4V7a3 3 0 0 0-3-3"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></symbol>
+    <symbol id="i-fork" viewBox="0 0 24 24"><path d="M7 2v8m-3-8v6a3 3 0 0 0 6 0V2M7 10v12"/><path d="M17 2c-2 2.5-2.5 6-2.5 8.5h5C19.5 8 19 4.5 17 2zM17 10.5V22"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="M16.5 3.5 20.5 7.5 8 20H4v-4L16.5 3.5z"/></symbol>
+  </defs>
+</svg>
+
+<div class="top"><span class="wordmark"><span class="mark" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="b3"></span></span>MacroMatch</span></div>
+
+<main>
+<!-- ================= TODAY / DIARY ================= -->
+<section class="view active pad" id="view-today" aria-label="Today">
+  <div class="greet-block">
+    <p class="greet-line"><span id="greet-word">Good evening</span>,
+      <button class="name-btn press" id="name-btn" aria-label="Change your name">
+        <span id="greet-name">mate</span><svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg>
+      </button>
+    </p>
+    <div class="big-remain"><span id="home-cal">1240</span><small> cal left today</small></div>
+    <p class="greet-q">It's <b class="num" id="home-time">7:02pm</b> — <b>what'll it be?</b></p>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="label">Left today</span><span class="label num" id="home-date">Tue 14 Jul</span></div>
+    <div class="macro-bars" id="macro-ledger"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <span class="label">Protein pressure</span>
+      <button class="info-btn press" data-info="pp-info" aria-label="What is protein pressure?">?</button>
+    </div>
+    <div class="pp-strip">
+      <div class="pp-num"><span id="pp-val">7.3</span><small>g P / 100 cal left</small></div>
+      <div class="pp-scale">
+        <div class="pp-segs" id="pp-segs"><span></span><span></span><span></span><span></span></div>
+        <div class="pp-band"><span>cruise</span><span>on track</span><span>lean</span><span>tight</span></div>
+      </div>
+    </div>
+    <p class="pp-read" id="pp-read"></p>
+    <div class="info-txt" id="pp-info">The protein you still need, divided by the calories you have left (per 100 cal). Low = relaxed, almost anything works. High = your remaining calories must come from lean, protein-dense food. Chicken breast is ~19 g/100 cal; hot chips are ~1.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="label">Food diary</span><span class="label num" id="diary-total"></span></div>
+    <div id="meals"></div>
+  </div>
+</section>
+
+<!-- ================= PROFILE ================= -->
+<section class="view pad" id="view-profile" aria-label="Profile">
+  <div class="card">
+    <div class="prof-name">
+      <div class="avatar" id="avatar">M</div>
+      <div class="who">
+        <h3 id="prof-name">mate</h3>
+        <button class="press" id="prof-name-btn">Change name</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <span class="label">Daily targets</span>
+      <button class="info-btn press" data-info="t-info" aria-label="About daily targets">?</button>
+    </div>
+    <div class="info-txt" id="t-info">Set these once (from your coach, a calculator, or the MacroMatch wizard) and leave them alone — the whole app filters food against what's left of these numbers each day.</div>
+    <div class="t-edit">
+      <div class="t-field"><label for="t-kcal">Calories</label><input id="t-kcal" inputmode="numeric" value="2580"></div>
+      <div class="t-field"><label for="t-p">Protein g</label><input id="t-p" inputmode="numeric" value="180"></div>
+      <div class="t-field"><label for="t-c">Carbs g</label><input id="t-c" inputmode="numeric" value="285"></div>
+      <div class="t-field"><label for="t-f">Fat g</label><input id="t-f" inputmode="numeric" value="80"></div>
+    </div>
+    <div class="balance" id="balance"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <span class="label">The working</span>
+      <button class="info-btn press" data-info="r-info" aria-label="About this calculation">?</button>
+    </div>
+    <div class="info-txt" id="r-info">Every macro has a fixed calorie value — protein 4 cal/g, carbs 4 cal/g, fat 9 cal/g. Your targets should always add up to your calorie budget. MacroMatch checks this constantly so your numbers never quietly drift.</div>
+    <div id="receipt"></div>
+  </div>
+
+  <p class="fine">MacroMatch provides general nutrition information and calculation tools — not medical or dietary advice; individual needs vary. For personalised guidance see a GP or an Accredited Practising Dietitian. Branded values approximate published Australian nutrition information; check current labels.</p>
+</section>
+</main>
+
+<!-- ================= EAT SHEET (flagship) ================= -->
+<div class="sheet" id="eat-sheet" role="dialog" aria-modal="true" aria-labelledby="eat-title">
+  <div class="scrim" data-close-eat></div>
+  <div class="sheet-in">
+    <div class="sheet-head">
+      <div class="sheet-grab" aria-hidden="true"></div>
+      <div class="sheet-title-row">
+        <h2 id="eat-title">Let's see what you can eat</h2>
+        <button class="sheet-close press" data-close-eat aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+      </div>
+      <p class="sheet-sub" id="eat-sub"></p>
+      <div class="search-row">
+        <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+        <label for="eat-search" style="position:absolute;left:-9999px">Search foods or venues</label>
+        <input id="eat-search" type="search" placeholder="Search foods or venues…" autocomplete="off">
+      </div>
+    </div>
+    <div class="chips" id="eat-chips" role="group" aria-label="Filter by venue"></div>
+    <div class="sheet-list" id="eat-list"></div>
+  </div>
+</div>
+
+<!-- name dialog -->
+<div class="mini-dialog" id="name-dialog" role="dialog" aria-modal="true" aria-labelledby="nd-title">
+  <div class="scrim" data-close-name></div>
+  <div class="mini-sheet">
+    <h3 id="nd-title">What should we call you?</h3>
+    <p>Kept on this device for this session only.</p>
+    <label for="name-input" style="position:absolute;left:-9999px">Your name</label>
+    <input id="name-input" type="text" maxlength="20" autocomplete="given-name" placeholder="e.g. Ronan">
+    <div class="row">
+      <button class="btn cancel press" type="button" data-close-name>Cancel</button>
+      <button class="btn save press" type="button" id="name-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- bottom nav -->
+<nav class="navbar" aria-label="Primary">
+  <div class="nav-in">
+    <button class="nav-item active press" id="nav-today" aria-current="page">
+      <svg class="icon"><use href="#i-book"/></svg>Diary
+    </button>
+    <button class="eat-btn" id="nav-eat" aria-label="Let's see what you can eat">
+      <svg class="icon"><use href="#i-fork"/></svg><span>Eat</span>
+    </button>
+    <button class="nav-item press" id="nav-profile">
+      <svg class="icon"><use href="#i-user"/></svg>Profile
+    </button>
+  </div>
+</nav>
+
+</div><!-- /app -->
+
+<script>
+// ================= state (in-memory) =================
+var S = {
+  name: 'mate',
+  targets: { kcal:2580, p:180, c:285, f:80 },
+  diary: { Breakfast:[], Lunch:[], Dinner:[], Snacks:[] },
+  venue: 'All', search: ''
+};
+// a believable part-eaten day so the app opens alive
+var SEED = [
+  ['Breakfast', {n:'High-protein yoghurt pot', v:'Coles / Woolies', kcal:130, p:15, c:10, f:2}],
+  ['Breakfast', {n:'Banana', v:'Coles / Woolies', kcal:105, p:1, c:27, f:0}],
+  ['Lunch',     {n:'Chicken Bowl (no rice)', v:'GYG', kcal:330, p:32, c:15, f:15}],
+  ['Snacks',    {n:'Large Skim Flat White', v:'Café', kcal:130, p:12, c:18, f:1}]
+];
+SEED.forEach(function(s){ S.diary[s[0]].push(Object.assign({id:Math.random()}, s[1])); });
+
+var DB = [
+  {n:"Roast Chicken Breast 150 g", v:"Coles / Woolies", kcal:240, p:45, c:0,  f:6},
+  {n:"Chicken Bowl (no rice)",     v:"GYG",             kcal:330, p:32, c:15, f:15},
+  {n:"Chicken Bowl (with rice)",   v:"GYG",             kcal:550, p:35, c:55, f:18},
+  {n:"Original Tenders (3)",       v:"KFC",             kcal:310, p:24, c:18, f:15},
+  {n:"Zinger Burger",              v:"KFC",             kcal:450, p:22, c:42, f:21},
+  {n:"Grilled Chicken Salad",      v:"McDonald's",      kcal:180, p:25, c:8,  f:5},
+  {n:"Big Mac",                    v:"McDonald's",      kcal:550, p:27, c:44, f:29},
+  {n:"Double Cheeseburger",        v:"McDonald's",      kcal:450, p:26, c:32, f:24},
+  {n:"6\" Chicken Teriyaki",       v:"Subway",          kcal:340, p:24, c:48, f:5},
+  {n:"Chicken Teriyaki Salad",     v:"Subway",          kcal:180, p:20, c:16, f:3},
+  {n:"Double Bondi Burger",        v:"Oporto",          kcal:610, p:45, c:42, f:27},
+  {n:"1/4 PERi-PERi Chicken",      v:"Nando's",         kcal:330, p:36, c:3,  f:20},
+  {n:"Whopper Junior",             v:"Hungry Jack's",   kcal:320, p:15, c:28, f:16},
+  {n:"Grilled Chicken Burger",     v:"Hungry Jack's",   kcal:480, p:30, c:40, f:21},
+  {n:"Simply Grill'd (low-carb)",  v:"Grill'd",         kcal:360, p:33, c:12, f:18},
+  {n:"Salmon Sashimi (5 pc)",      v:"Sushi bar",       kcal:120, p:12, c:0,  f:8},
+  {n:"Teriyaki Chicken Roll",      v:"Sushi bar",       kcal:290, p:13, c:44, f:7},
+  {n:"Musashi protein shake",      v:"Coles / Woolies", kcal:220, p:30, c:12, f:5},
+  {n:"High-protein yoghurt pot",   v:"Coles / Woolies", kcal:130, p:15, c:10, f:2},
+  {n:"Tuna pouch (95 g)",          v:"Coles / Woolies", kcal:105, p:17, c:1,  f:4},
+  {n:"Regular Chips",              v:"KFC",             kcal:310, p:4,  c:40, f:14},
+  {n:"Quarter Chicken (skin off)", v:"Red Rooster",     kcal:330, p:40, c:2,  f:18}
+];
+var MEALS = ['Breakfast','Lunch','Dinner','Snacks'];
+
+// ================= helpers =================
+function eaten(){
+  var t = {kcal:0,p:0,c:0,f:0};
+  MEALS.forEach(function(m){ S.diary[m].forEach(function(e){ t.kcal+=e.kcal; t.p+=e.p; t.c+=e.c; t.f+=e.f; }); });
+  return t;
+}
+function remaining(){
+  var e = eaten();
+  return { kcal:Math.max(S.targets.kcal-e.kcal,0), p:Math.max(S.targets.p-e.p,0),
+           c:Math.max(S.targets.c-e.c,0), f:Math.max(S.targets.f-e.f,0), raw:e };
+}
+function greeting(h){ return h<12 ? 'Good morning' : h<17 ? 'Good arvo' : 'Good evening'; }
+function fmtTime(d){ var h=d.getHours(),m=d.getMinutes(),ap=h>=12?'pm':'am'; h=h%12||12; return h+':'+(m<10?'0'+m:m)+ap; }
+function autoMeal(){ var h=new Date().getHours(); return h<11?'Breakfast':h<16?'Lunch':h<21?'Dinner':'Snacks'; }
+var toastTimer;
+function toast(html){
+  var t=document.getElementById('toast');
+  t.innerHTML='<svg class="icon sm"><use href="#i-check"/></svg><span>'+html+'</span>';
+  t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.classList.remove('show'); },3200);
+}
+
+// ================= render: today =================
+function renderToday(){
+  var r = remaining(), now = new Date();
+  document.getElementById('greet-word').textContent = greeting(now.getHours());
+  document.getElementById('greet-name').textContent = S.name;
+  document.getElementById('home-time').textContent = fmtTime(now);
+  document.getElementById('home-cal').textContent = r.kcal;
+  document.getElementById('home-date').textContent =
+    now.toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'});
+
+  // macro ledger with dotted leaders
+  var rows = [
+    {k:'Protein', dot:'var(--dot-p)', left:r.p,  t:S.targets.p,  u:'g'},
+    {k:'Carbs',   dot:'var(--dot-c)', left:r.c,  t:S.targets.c,  u:'g'},
+    {k:'Fat',     dot:'var(--dot-f)', left:r.f,  t:S.targets.f,  u:'g'}
+  ];
+  document.getElementById('macro-ledger').innerHTML = rows.map(function(m){
+    var pct = m.t ? Math.min((m.t-m.left)/m.t*100,100) : 0;
+    return '<div class="ledger-row"><span class="dot" style="background:'+m.dot+'"></span>'+
+      '<span class="k">'+m.k+'</span><span class="leader"></span>'+
+      '<span class="v num">'+m.left+' '+m.u+' left</span></div>'+
+      '<div class="mini-track"><i style="width:'+pct+'%"></i></div>';
+  }).join('');
+
+  // protein pressure
+  var pp = (r.kcal>0 && r.p>0) ? (r.p/r.kcal)*100 : 0;
+  document.getElementById('pp-val').textContent = pp.toFixed(1);
+  var band = pp<=5?0 : pp<=8?1 : pp<=12?2 : 3;
+  var segs = document.getElementById('pp-segs').children;
+  for (var i=0;i<4;i++){ segs[i].className = i<=band ? (band>=2?'on hot':'on') : ''; }
+  var reads = [
+    '<b>Cruise mode.</b> Plenty of room — nearly anything on the menu can work tonight.',
+    '<b>On track.</b> Moderately lean picks (grilled chicken, bowls, subs) keep everything balanced.',
+    '<b>Lean picks only.</b> Your remaining calories need to carry serious protein — tenders, breast, shakes.',
+    '<b>Tight squeeze.</b> Very little calorie room for the protein still owed. Sashimi, tuna, plain breast.'
+  ];
+  document.getElementById('pp-read').innerHTML = r.p===0
+    ? '<b>Protein done.</b> Whatever fits your remaining calories is fair game.'
+    : reads[band];
+
+  // diary
+  var e = r.raw;
+  document.getElementById('diary-total').textContent = e.kcal+' cal · '+e.p+'P/'+e.c+'C/'+e.f+'F';
+  document.getElementById('meals').innerHTML = MEALS.map(function(m){
+    var list = S.diary[m];
+    var tot = list.reduce(function(a,x){ return a+x.kcal; },0);
+    return '<div class="meal"><div class="meal-head"><h3>'+m+'</h3><span class="tot num">'+(tot||'—')+(tot?' cal':'')+'</span></div>'+
+      (list.length ? list.map(function(x){
+        return '<div class="entry"><div class="e-main"><h4>'+x.n+'</h4><span>'+x.v+' · '+x.p+'P/'+x.c+'C/'+x.f+'F</span></div>'+
+          '<span class="e-kcal num">'+x.kcal+'</span>'+
+          '<button class="e-del press" data-meal="'+m+'" data-id="'+x.id+'" aria-label="Remove '+x.n+'"><svg class="icon sm"><use href="#i-x"/></svg></button></div>';
+      }).join('') : '<p class="empty-line">Nothing logged yet.</p>')+
+      '<button class="meal-add press" data-open-eat data-meal="'+m+'"><svg class="icon sm"><use href="#i-fork"/></svg>See what fits</button></div>';
+  }).join('');
+}
+
+// ================= render: profile =================
+function renderProfile(){
+  document.getElementById('prof-name').textContent = S.name;
+  document.getElementById('avatar').textContent = S.name.charAt(0).toUpperCase();
+  var t = S.targets;
+  var macroCal = t.p*4 + t.c*4 + t.f*9;
+  var gap = t.kcal - macroCal;
+  var bal = document.getElementById('balance');
+  if (Math.abs(gap) <= 25){
+    bal.className = 'balance ok';
+    bal.innerHTML = '<svg class="icon sm"><use href="#i-check"/></svg><span>Balanced — '+t.p+'g P + '+t.c+'g C + '+t.f+'g F = <b class="num">'+macroCal+' cal</b>, matching your budget.</span>';
+  } else {
+    bal.className = 'balance gap';
+    bal.innerHTML = '<svg class="icon sm"><use href="#i-x"/></svg><span>Your macros add to <b class="num">'+macroCal+' cal</b> but the calorie target is <b class="num">'+t.kcal+'</b> — '+Math.abs(gap)+' cal '+(gap>0?'unaccounted for':'over')+'. Adjust one number so the day balances.</span>';
+  }
+  document.getElementById('receipt').innerHTML =
+    row('Protein '+t.p+' g × 4', t.p*4) + row('Carbs '+t.c+' g × 4', t.c*4) + row('Fat '+t.f+' g × 9', t.f*9) +
+    '<div class="ledger-row" style="border-top:2px solid var(--ink);margin-top:6px;padding-top:10px">'+
+    '<span class="k" style="color:var(--ink);font-weight:700">DAY BUDGET</span><span class="leader"></span>'+
+    '<span class="v num" style="font-size:16px">'+t.kcal+' cal</span></div>';
+  function row(k,v){ return '<div class="ledger-row"><span class="k">'+k+'</span><span class="leader"></span><span class="v num">'+v+'</span></div>'; }
+}
+['t-kcal','t-p','t-c','t-f'].forEach(function(id,i){
+  document.getElementById(id).addEventListener('input', function(){
+    var keys=['kcal','p','c','f'];
+    S.targets[keys[i]] = Math.max(parseInt(this.value.replace(/\D/g,''))||0,0);
+    renderProfile(); renderToday();
+  });
+});
+
+// ================= EAT sheet (flagship) =================
+var eatSheet = document.getElementById('eat-sheet');
+var eatMealOverride = null;
+var VENUES = ['All'].concat(Array.from(new Set(DB.map(function(f){return f.v;}))));
+document.getElementById('eat-chips').innerHTML = VENUES.map(function(v){
+  return '<button type="button" class="chip press" data-v="'+v+'" aria-pressed="'+(v==='All')+'">'+v+'</button>';
+}).join('');
+
+function openEat(mealOverride){
+  eatMealOverride = mealOverride || null;
+  eatSheet.classList.add('open');
+  renderEat();
+  setTimeout(function(){ document.getElementById('eat-search').focus({preventScroll:true}); }, 250);
+}
+function closeEat(){ eatSheet.classList.remove('open'); eatMealOverride = null; }
+eatSheet.addEventListener('click', function(e){ if (e.target.hasAttribute('data-close-eat') || e.target.closest('[data-close-eat]')) closeEat(); });
+document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ closeEat(); document.getElementById('name-dialog').classList.remove('open'); } });
+
+document.getElementById('eat-chips').addEventListener('click', function(e){
+  var b = e.target.closest('.chip'); if(!b) return;
+  S.venue = b.dataset.v;
+  this.querySelectorAll('.chip').forEach(function(c){ c.setAttribute('aria-pressed', c===b ? 'true':'false'); });
+  renderEat();
+});
+document.getElementById('eat-search').addEventListener('input', function(){ S.search = this.value.trim().toLowerCase(); renderEat(); });
+
+function renderEat(){
+  var r = remaining();
+  var meal = eatMealOverride || autoMeal();
+  document.getElementById('eat-sub').textContent =
+    r.kcal+' cal · '+r.p+' g protein left · logging to '+meal;
+  var need = (r.kcal>0 && r.p>0) ? (r.p/r.kcal)*100 : 0;
+  var rows = DB
+    .filter(function(f){ return (S.venue==='All'||f.v===S.venue) &&
+      (!S.search || (f.n+' '+f.v).toLowerCase().indexOf(S.search)>=0); })
+    .map(function(f){
+      var fits = f.kcal<=r.kcal && f.p<=r.p+9999 && f.c<=r.c && f.f<=r.f; // carbs/fat respected too
+      var over = [];
+      if (f.kcal>r.kcal) over.push((f.kcal-r.kcal)+' cal');
+      if (f.c>r.c) over.push((f.c-r.c)+'g carbs');
+      if (f.f>r.f) over.push((f.f-r.f)+'g fat');
+      var pace = fits && need>0 && (f.p/f.kcal)*100 >= need;
+      return {f:f, fits:fits, pace:pace, over:over};
+    })
+    .sort(function(a,b){ return (b.pace-a.pace)||(b.fits-a.fits)||(b.f.p-a.f.p); });
+
+  var fitCount = rows.filter(function(x){return x.fits;}).length;
+  var html = rows.map(function(x){
+    var cls = x.pace?'food pace':x.fits?'food fits':'food over';
+    var icon = x.pace?'#i-bolt':x.fits?'#i-check':'#i-x';
+    var sub = x.pace?'Fits — on protein pace':x.fits?'Fits what\u2019s left':'Over by '+x.over.join(', ');
+    return '<button type="button" class="'+cls+'" data-n="'+x.f.n+'" '+(x.fits?'':'disabled')+
+      ' aria-label="'+x.f.n+', '+x.f.kcal+' calories, '+x.f.p+' grams protein. '+sub+(x.fits?'. Tap to log to '+meal+'.':'')+'">'+
+      '<span class="f-state"><svg class="icon sm"><use href="'+icon+'"/></svg></span>'+
+      '<span class="f-main"><h4>'+x.f.n+'</h4><span>'+x.f.v+' · '+sub+'</span></span>'+
+      '<span class="f-nums"><b>'+x.f.kcal+'</b>'+x.f.p+' g P</span></button>';
+  }).join('');
+  document.getElementById('eat-list').innerHTML =
+    (fitCount===0 ? '<div class="no-fit">Nothing fits what\u2019s left today'+(S.venue!=='All'?' at '+S.venue:'')+'. Try another venue — or that\u2019s the day done, legend.</div>' : '')
+    + html + '<p class="list-note">Ranked by protein pace, then fit · values from published AU nutrition info</p>';
+}
+document.getElementById('eat-list').addEventListener('click', function(e){
+  var b = e.target.closest('.food'); if(!b || b.disabled) return;
+  var f = DB.find(function(x){ return x.n===b.dataset.n; });
+  var meal = eatMealOverride || autoMeal();
+  S.diary[meal].push(Object.assign({id:Math.random()}, f));
+  renderToday(); renderEat();
+  var r = remaining();
+  toast('Logged to '+meal+' — '+r.kcal+' cal to go.');
+});
+
+// diary interactions
+document.getElementById('meals').addEventListener('click', function(e){
+  var del = e.target.closest('.e-del');
+  if (del){
+    var m = del.dataset.meal, id = +del.dataset.id || del.dataset.id;
+    S.diary[m] = S.diary[m].filter(function(x){ return String(x.id)!==String(del.dataset.id); });
+    renderToday(); toast('Removed. Budget updated.');
+    return;
+  }
+  var add = e.target.closest('[data-open-eat]');
+  if (add) openEat(add.dataset.meal);
+});
+
+// info toggles
+document.addEventListener('click', function(e){
+  var b = e.target.closest('.info-btn'); if(!b) return;
+  document.getElementById(b.dataset.info).classList.toggle('open');
+});
+
+// ================= nav =================
+function show(view){
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.getElementById('view-'+view).classList.add('active');
+  document.getElementById('nav-today').classList.toggle('active', view==='today');
+  document.getElementById('nav-profile').classList.toggle('active', view==='profile');
+  document.getElementById('nav-today').toggleAttribute('aria-current', view==='today');
+  document.getElementById('nav-profile').toggleAttribute('aria-current', view==='profile');
+  window.scrollTo({top:0});
+}
+document.getElementById('nav-today').addEventListener('click', function(){ show('today'); });
+document.getElementById('nav-profile').addEventListener('click', function(){ renderProfile(); show('profile'); });
+document.getElementById('nav-eat').addEventListener('click', function(){ openEat(); });
+
+// ================= name =================
+var nameDialog = document.getElementById('name-dialog');
+function openName(){ nameDialog.classList.add('open');
+  var inp=document.getElementById('name-input'); inp.value = S.name==='mate'?'':S.name;
+  setTimeout(function(){ inp.focus(); },50); }
+document.getElementById('name-btn').addEventListener('click', openName);
+document.getElementById('prof-name-btn').addEventListener('click', openName);
+nameDialog.addEventListener('click', function(e){ if(e.target.hasAttribute('data-close-name')) nameDialog.classList.remove('open'); });
+document.getElementById('name-save').addEventListener('click', function(){
+  S.name = document.getElementById('name-input').value.trim() || 'mate';
+  nameDialog.classList.remove('open');
+  renderToday(); renderProfile();
+});
+
+// boot
+renderToday(); renderProfile();
+setInterval(renderToday, 30000);
+</script>
+</body>
+</html>

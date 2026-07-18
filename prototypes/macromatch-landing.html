@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>MacroMatch — What can I eat next?</title>
+<meta name="description" content="The Australian macro tracker that answers the real question: what can I eat next? Try the live demo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --surface:#F2F4F0; --surface-raised:#FFFFFF; --surface-inverse:#16251E; --surface-inverse-2:#1E3128;
+    --text:#182420; --text-sub:#5C6B62; --text-on-inverse:#FFFFFF; --text-on-inverse-sub:#9FB3A8;
+    --border:#E2E7E0; --border-inverse:rgba(255,255,255,.12);
+    --data-protein:#D6455D; --data-carbs:#B97C0A; --data-fat:#2F7676;
+    --ok:#2F7D4F; --ok-soft:#E4F0E8; --ok-on-inverse:#8FD3A8;
+    --danger:#B93B3B; --danger-on-inverse:#E8A3A3; --warn-soft:#FBF3E2; --warn:#7A5A12;
+    --disp:'Bricolage Grotesque','Arial Black',system-ui,sans-serif;
+    --body:'Space Grotesk','Segoe UI',system-ui,sans-serif;
+    --mono:'Space Mono','Courier New',monospace;
+    --r-sm:12px; --r-md:16px; --r-lg:24px;
+    --shadow-1:0 1px 2px rgba(24,36,32,.06);
+    --shadow-2:0 16px 48px rgba(22,37,30,.18);
+    --dur:200ms; --ease:cubic-bezier(.2,.7,.3,1);
+    --sab:env(safe-area-inset-bottom,0px);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:#E7EAE5;color:var(--text);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  /* phone-width app shell — presents like a mobile app even on desktop */
+  .shell{max-width:480px;margin:0 auto;background:var(--surface);min-height:100dvh;position:relative;
+         box-shadow:0 0 60px rgba(22,37,30,.12)}
+  .pad{padding-left:20px;padding-right:20px}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  a{color:inherit}
+  .skip{position:absolute;left:-999px;top:8px;z-index:100;background:var(--surface-inverse);color:#fff;padding:12px 18px;border-radius:var(--r-sm);font-weight:700}
+  .skip:focus{left:8px}
+  :focus-visible{outline:3px solid var(--ok);outline-offset:2px;border-radius:4px}
+  @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto} *,*::before,*::after{animation:none!important;transition:none!important}}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;width:100%;
+       border:none;cursor:pointer;font-family:var(--body);font-weight:700;font-size:16px;
+       padding:0 24px;border-radius:var(--r-md);background:var(--text);color:#fff;text-decoration:none;
+       transition:transform var(--dur) var(--ease),background var(--dur) var(--ease)}
+  .btn:active{transform:scale(.97)}
+  .btn.inline{width:auto;min-height:44px;font-size:14px;border-radius:var(--r-sm)}
+  .btn.quiet{background:var(--surface-raised);color:var(--text);border:1.5px solid var(--border)}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-sub)}
+  .icon{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+  .icon.sm{width:14px;height:14px}
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity 320ms var(--ease),transform 320ms var(--ease)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* top bar */
+  .top{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--surface) 92%,transparent);
+       backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+  .top-in{display:flex;align-items:center;justify-content:space-between;min-height:60px}
+  .logo{display:inline-flex;align-items:center;gap:9px;min-height:44px;text-decoration:none;
+        font-family:var(--disp);font-weight:800;font-size:19px;letter-spacing:-.02em}
+  .logo-mark{display:inline-flex;align-items:flex-end;gap:2.5px;height:19px}
+  .logo-mark span{width:5px;border-radius:2px}
+  .logo-mark .b1{height:60%;background:var(--data-protein)}
+  .logo-mark .b2{height:100%;background:var(--data-carbs)}
+  .logo-mark .b3{height:40%;background:var(--data-fat)}
+  .logo small{font-weight:500;color:var(--text-sub);font-size:11px;margin-left:1px}
+  .top .btn.inline{min-height:40px;font-size:13px;padding:0 16px}
+
+  /* sticky bottom CTA (thumb zone) */
+  .bottom-bar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;
+              transform:translateY(110%);transition:transform 280ms var(--ease);pointer-events:none}
+  .bottom-bar.show{transform:none;pointer-events:auto}
+  .bottom-bar .bar-in{width:100%;max-width:480px;background:color-mix(in srgb,var(--surface-inverse) 96%,transparent);
+       backdrop-filter:blur(8px);padding:12px 16px calc(12px + var(--sab));display:flex;gap:10px;align-items:center}
+  .bottom-bar .who{color:var(--text-on-inverse);font-size:13px;line-height:1.3;flex:1;min-width:0}
+  .bottom-bar .who b{display:block;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:15px}
+  .bottom-bar .btn{width:auto;flex:0 0 auto;background:#fff;color:var(--text);min-height:48px;font-size:15px}
+
+  /* sections */
+  section{padding:56px 0}
+  h2{font-family:var(--disp);font-weight:800;font-size:clamp(26px,7vw,32px);letter-spacing:-.02em;line-height:1.12;margin:10px 0 10px}
+  .section-lead{color:var(--text-sub);font-size:15.5px}
+  .step-label{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;
+              text-transform:uppercase;color:var(--text-sub)}
+  .step-label::after{content:"";flex:1;height:1px;background:var(--border)}
+
+  /* ============ hero ============ */
+  .hero{padding:28px 0 40px}
+  .greet{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--text-sub);margin-bottom:10px}
+  .greet .name-btn{display:inline-flex;align-items:center;gap:5px;min-height:44px;padding:0 8px;margin-left:-8px;
+        border:none;background:none;cursor:pointer;font-family:var(--body);font-size:15px;font-weight:700;color:var(--text);border-radius:var(--r-sm)}
+  .greet .name-btn .icon{width:13px;height:13px;color:var(--text-sub)}
+  .greet .name-btn:active{transform:scale(.97)}
+  h1{font-family:var(--disp);font-weight:800;font-size:clamp(32px,9vw,42px);line-height:1.06;letter-spacing:-.025em;margin-bottom:14px}
+  h1 .hl{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;color:var(--ok);white-space:nowrap}
+  .hero p.lead{font-size:16px;color:var(--text-sub);margin-bottom:20px}
+
+  .board{background:var(--surface-inverse);border-radius:var(--r-lg);padding:20px;color:var(--text-on-inverse);box-shadow:var(--shadow-2)}
+  .board-head{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:11px;
+              letter-spacing:.1em;text-transform:uppercase;color:var(--text-on-inverse-sub);margin-bottom:12px}
+  .board-big{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:40px;line-height:1}
+  .board-big small{font-size:13px;color:var(--text-on-inverse-sub);font-weight:400}
+  input[type=range]{width:100%;accent-color:var(--ok);height:44px;cursor:pointer;touch-action:manipulation}
+  .slider-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;color:var(--text-on-inverse-sub)}
+  .tiles{display:grid;grid-template-columns:1fr;gap:9px;margin-top:6px}
+  @media(min-width:400px){.tiles{grid-template-columns:1fr 1fr}}
+  .tile{background:var(--surface-inverse-2);border:1.5px solid var(--border-inverse);border-radius:var(--r-sm);
+        padding:11px 12px;transition:opacity var(--dur) var(--ease),border-color var(--dur) var(--ease)}
+  .tile h4{font-size:13px;font-weight:700;line-height:1.3}
+  .tile .venue{font-family:var(--mono);font-size:10px;color:var(--text-on-inverse-sub);margin-top:2px}
+  .tile .macros{display:flex;justify-content:space-between;margin-top:7px;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:11px}
+  .tile .macros b{font-size:13.5px}
+  .tile .state{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;margin-top:7px;min-height:15px}
+  .tile.fits{border-color:var(--ok)}
+  .tile.fits .state{color:var(--ok-on-inverse)}
+  .tile.over{opacity:.45}
+  .tile.over .state{color:var(--danger-on-inverse)}
+  .board-foot{display:flex;gap:8px;align-items:flex-start;font-family:var(--mono);font-size:10.5px;color:var(--text-on-inverse-sub);margin-top:12px}
+
+  /* ============ full demo ============ */
+  .demo-card{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;box-shadow:var(--shadow-1)}
+  .budget-row{display:flex;gap:10px}
+  .budget{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:12px}
+  .budget label{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-sub)}
+  .stepper{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+  .stepper output{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:22px}
+  .stepper output small{font-size:11px;color:var(--text-sub);font-weight:400}
+  .stepper button{width:44px;height:44px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:var(--surface-raised);
+                  font-size:20px;font-weight:700;cursor:pointer;color:var(--text);transition:transform var(--dur) var(--ease)}
+  .stepper button:active{transform:scale(.94)}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding:14px 0 4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;min-height:40px;padding:0 15px;display:inline-flex;align-items:center;border-radius:999px;
+        font-size:13px;font-weight:600;border:1.5px solid var(--border);background:var(--surface);color:var(--text-sub);cursor:pointer;
+        transition:transform var(--dur) var(--ease)}
+  .chip:active{transform:scale(.96)}
+  .chip[aria-pressed="true"]{background:var(--text);color:#fff;border-color:var(--text)}
+  .food-list{margin-top:8px;border-top:1px solid var(--border)}
+  .food{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:none;background:none;cursor:pointer;
+        padding:13px 4px;border-bottom:1px solid var(--border);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+  .food:active{transform:scale(.985)}
+  .food .f-state{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .food.fits .f-state{background:var(--ok-soft);color:var(--ok)}
+  .food.pace .f-state{background:var(--surface-inverse);color:var(--ok-on-inverse)}
+  .food.over{opacity:.42}
+  .food.over .f-state{background:#F7E6E6;color:var(--danger)}
+  .food .f-main{flex:1;min-width:0}
+  .food .f-main h4{font-size:14.5px;font-weight:700;line-height:1.25}
+  .food .f-main span{display:block;font-family:var(--mono);font-size:11px;color:var(--text-sub);margin-top:1px}
+  .food .f-nums{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;color:var(--text-sub)}
+  .food .f-nums b{display:block;font-size:15px;color:var(--text)}
+  .demo-msg{display:flex;align-items:center;gap:8px;min-height:22px;margin-top:12px;font-size:13.5px;font-weight:600;color:var(--ok)}
+  .demo-note{font-size:12px;color:var(--text-sub);margin-top:12px;line-height:1.5}
+  .demo-reset{margin-top:10px}
+
+  /* ============ steps / bento / promise ============ */
+  .steps-grid{display:flex;flex-direction:column;gap:12px;margin-top:22px}
+  .step{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--r-md);padding:18px;box-shadow:var(--shadow-1);display:flex;gap:14px}
+  .step .glyph{width:44px;height:44px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;
+               font-family:var(--mono);font-weight:700;font-size:14px;color:#fff;flex:0 0 auto}
+  .step h3{font-size:16px;font-weight:700;margin-bottom:4px}
+  .step p{color:var(--text-sub);font-size:14px}
+
+  .bento{display:flex;flex-direction:column;gap:12px;margin-top:22px}
+  .cell{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--r-md);padding:20px;box-shadow:var(--shadow-1)}
+  .cell.inverse{background:var(--surface-inverse);color:var(--text-on-inverse);border-color:var(--surface-inverse)}
+  .cell .tag{display:inline-flex;align-items:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+             text-transform:uppercase;padding:5px 12px;border-radius:999px;margin-bottom:12px}
+  .cell h3{font-size:17px;font-weight:700;margin-bottom:6px}
+  .cell p{font-size:14px;color:var(--text-sub)}
+  .cell.inverse p{color:var(--text-on-inverse-sub)}
+  .gauge{height:8px;border-radius:4px;background:linear-gradient(90deg,var(--ok),var(--data-carbs),var(--danger));position:relative;margin:14px 0 8px}
+  .gauge i{position:absolute;top:-4px;left:62%;width:4px;height:16px;background:var(--text);border-radius:2px}
+  .gauge-label{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:11px;color:var(--text-sub)}
+  .mini-receipt{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12.5px;background:var(--surface);
+                border:1px solid var(--border);border-radius:var(--r-sm);padding:13px;margin-top:12px}
+  .mini-receipt .row{display:flex;justify-content:space-between;padding:2px 0;color:var(--text-sub)}
+  .mini-receipt .row b{color:var(--text)}
+  .mini-receipt .total{border-top:2px solid var(--text);margin-top:7px;padding-top:7px;display:flex;justify-content:space-between;font-weight:700}
+  .mini-receipt .check{display:flex;align-items:center;gap:6px;color:var(--ok);font-size:11px;margin-top:7px}
+  .venue-mini{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .venue-mini span{font-family:var(--mono);font-size:10.5px;border:1px solid var(--border-inverse);border-radius:999px;padding:5px 10px;color:var(--text-on-inverse-sub)}
+
+  .honest{background:var(--surface-inverse);color:var(--text-on-inverse);border-radius:var(--r-lg);padding:28px 22px}
+  .honest h2{color:#fff}
+  .honest-grid{display:flex;flex-direction:column;gap:20px;margin-top:22px}
+  .h-item{border-top:1px solid var(--border-inverse);padding-top:14px}
+  .h-item .no{font-family:var(--mono);color:var(--text-on-inverse-sub);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+  .h-item h3{font-size:16px;margin:5px 0 4px}
+  .h-item p{color:var(--text-on-inverse-sub);font-size:14px}
+
+  .cta-final{text-align:center;padding-bottom:140px}
+  footer{border-top:1px solid var(--border);padding:26px 0 calc(120px + var(--sab));font-size:12.5px;color:var(--text-sub)}
+  footer .fine{margin-top:12px;font-size:11.5px;line-height:1.6}
+
+  /* name edit dialog */
+  .name-dialog{position:fixed;inset:0;z-index:60;display:none;align-items:flex-end;justify-content:center}
+  .name-dialog.open{display:flex}
+  .name-dialog .scrim{position:absolute;inset:0;background:rgba(10,18,14,.55)}
+  .name-sheet{position:relative;width:100%;max-width:480px;background:var(--surface-raised);border-radius:20px 20px 0 0;
+              padding:22px 20px calc(22px + var(--sab))}
+  .name-sheet h3{font-size:17px;margin-bottom:4px}
+  .name-sheet p{font-size:13.5px;color:var(--text-sub);margin-bottom:14px}
+  .name-sheet input{width:100%;min-height:50px;font-size:16px;font-family:var(--body);padding:0 16px;
+                    border-radius:var(--r-sm);border:1.5px solid var(--border);margin-bottom:12px}
+  .name-sheet .row{display:flex;gap:10px}
+  .name-sheet .btn{flex:1}
+</style>
+</head>
+<body>
+<div class="shell">
+<a class="skip" href="#main">Skip to main content</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5 9.5 18 20 6.5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3z"/><path d="M12 10v4.5"/><circle cx="12" cy="17.5" r=".5"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="M16.5 3.5 20.5 7.5 8 20H4v-4L16.5 3.5z"/></symbol>
+  </defs>
+</svg>
+
+<div class="top">
+  <div class="pad top-in">
+    <a class="logo" href="#top" aria-label="MacroMatch home">
+      <span class="logo-mark" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="b3"></span></span>
+      MacroMatch<small>AU</small>
+    </a>
+    <a class="btn inline" href="#demo">Try the demo</a>
+  </div>
+</div>
+
+<main id="main">
+<!-- 01 · the moment -->
+<header class="hero pad" id="top">
+  <div class="greet">
+    <span id="greet-word">Good evening</span>,
+    <button class="name-btn" id="name-btn" aria-label="Change your name for the demo">
+      <span id="greet-name">mate</span>
+      <svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg>
+    </button>
+  </div>
+  <h1>It's <span class="hl num" id="hero-time">7:02pm</span>. You've got <span class="hl num" id="hero-cal">620 cal</span> left. What'll it be?</h1>
+  <p class="lead">Every tracker tells you what you ate. MacroMatch answers the harder question — what you can <em>still</em> order, from the shelves and drive-thrus you're actually standing in front of.</p>
+
+  <div class="board" role="group" aria-label="Live demo: adjust remaining calories to see which foods fit">
+    <div class="board-head"><span>Tonight's budget</span><span>Live — drag me</span></div>
+    <div class="board-big"><span class="num" id="cal-out">620</span> <small>cal left · 45 g protein to go</small></div>
+    <label for="cal-slider" style="position:absolute;left:-9999px">Calories remaining</label>
+    <input type="range" id="cal-slider" min="250" max="900" step="10" value="620">
+    <div class="slider-labels" aria-hidden="true"><span>250</span><span>900</span></div>
+    <div class="tiles" id="tiles"></div>
+    <div class="board-foot">
+      <svg class="icon sm" style="color:var(--ok-on-inverse)"><use href="#i-bolt"/></svg>
+      <span>= fits <b>and</b> keeps your protein on pace. Real app logic, not a mock-up.</span>
+    </div>
+  </div>
+</header>
+
+<!-- 02 · the demo (essential info first: let them use it) -->
+<section id="demo" class="pad" style="padding-top:34px">
+  <div class="step-label">02 · Have a proper go</div>
+  <h2>The full loop, in your hand.</h2>
+  <p class="section-lead">Set what's left of your day, filter by venue, and tap a food to log it — watch the budget and the recommendations move together.</p>
+
+  <div class="demo-card" style="margin-top:20px">
+    <div class="budget-row">
+      <div class="budget">
+        <label for="d-cal-out">Calories left</label>
+        <div class="stepper">
+          <button type="button" data-t="cal" data-d="-50" aria-label="Reduce calories by 50">−</button>
+          <output id="d-cal-out" class="num">620<small> cal</small></output>
+          <button type="button" data-t="cal" data-d="50" aria-label="Increase calories by 50">+</button>
+        </div>
+      </div>
+      <div class="budget">
+        <label for="d-pro-out">Protein to go</label>
+        <div class="stepper">
+          <button type="button" data-t="pro" data-d="-5" aria-label="Reduce protein by 5 grams">−</button>
+          <output id="d-pro-out" class="num">45<small> g</small></output>
+          <button type="button" data-t="pro" data-d="5" aria-label="Increase protein by 5 grams">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="chips" id="chips" role="group" aria-label="Filter by venue"></div>
+    <div class="food-list" id="food-list"></div>
+    <div class="demo-msg" id="demo-msg" role="status" aria-live="polite"></div>
+    <button class="btn quiet inline demo-reset" id="demo-reset" type="button">Reset the demo</button>
+    <p class="demo-note">Tap any food that fits to log it. This is the marketing demo — the full app adds the diary, the target wizard (it shows all its maths), and the learn hub.</p>
+  </div>
+</section>
+
+<!-- 03 · how it works -->
+<section id="how" class="pad">
+  <div class="step-label">03 · How it works</div>
+  <h2>Three steps. All the maths shown.</h2>
+  <div class="steps-grid">
+    <div class="step reveal">
+      <div class="glyph" style="background:var(--data-protein)">01</div>
+      <div><h3>Set targets you can verify</h3>
+      <p>The wizard calculates calories and macros from your body, training and goal — and prints every line of the working.</p></div>
+    </div>
+    <div class="step reveal">
+      <div class="glyph" style="background:var(--data-carbs)">02</div>
+      <div><h3>Log the day as it happens</h3>
+      <p>A fast diary built on the products you actually buy — chains, Coles and Woolies shelves, servo fridges.</p></div>
+    </div>
+    <div class="step reveal">
+      <div class="glyph" style="background:var(--data-fat)">03</div>
+      <div><h3>Ask it what to eat next</h3>
+      <p>Every product filtered against what's left of <em>your</em> day, trade-offs in plain sight.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 · what's different -->
+<section id="features" class="pad">
+  <div class="step-label">04 · What's different</div>
+  <h2>Built around the decision, not the diary.</h2>
+  <div class="bento">
+    <div class="cell reveal">
+      <span class="tag" style="background:#FBE9EC;color:var(--data-protein)">Signature</span>
+      <h3>Protein Pressure</h3>
+      <p>One number for how lean your next meal must be: grams of protein still needed per 100 remaining calories. Watch it climb and you'll never get protein-stranded at 9pm again.</p>
+      <div class="gauge" role="img" aria-label="Protein pressure gauge at 8.6 grams per 100 calories, in the lean picks zone"><i></i></div>
+      <span class="gauge-label">8.6 g / 100 cal — lean picks only</span>
+    </div>
+    <div class="cell reveal">
+      <span class="tag" style="background:var(--ok-soft);color:var(--ok)">Transparent</span>
+      <h3>The receipt</h3>
+      <p>Targets calculated from your body and goal — with the working printed, line by line.</p>
+      <div class="mini-receipt" aria-label="Example target calculation">
+        <div class="row"><span>Resting burn</span><b>1,842</b></div>
+        <div class="row"><span>× activity</span><b>2,855</b></div>
+        <div class="row"><span>Gentle cut</span><b>−275</b></div>
+        <div class="total"><span>TARGET</span><span>2,580</span></div>
+        <div class="check"><svg class="icon sm"><use href="#i-check"/></svg><span>4·P + 4·C + 9·F balances</span></div>
+      </div>
+    </div>
+    <div class="cell inverse reveal">
+      <span class="tag" style="background:rgba(255,255,255,.1);color:var(--text-on-inverse-sub)">Local</span>
+      <h3>Aussie shelves, not US imports</h3>
+      <p>Australian nutrition data, kJ-first, AU serving sizes — and the venues you actually order from.</p>
+      <div class="venue-mini">
+        <span>Macca's</span><span>KFC</span><span>Hungry Jack's</span><span>GYG</span><span>Grill'd</span>
+        <span>Subway</span><span>Red Rooster</span><span>Oporto</span><span>Coles</span><span>Woolies</span><span>7-Eleven</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 · promise -->
+<section id="honest" class="pad">
+  <div class="honest">
+    <span class="eyebrow" style="color:var(--text-on-inverse-sub)">05 · Our promise</span>
+    <h2>A tracker that treats you like an adult.</h2>
+    <div class="honest-grid">
+      <div class="h-item reveal">
+        <span class="no">No.01</span>
+        <h3>No forbidden foods</h3>
+        <p>Fast food isn't a moral failure — it's a data point with macros. If it fits your day, it fits.</p>
+      </div>
+      <div class="h-item reveal">
+        <span class="no">No.02</span>
+        <h3>No streaks, no shame</h3>
+        <p>No guilt notifications, no red days. Missed a day? The maths is right there when you're back.</p>
+      </div>
+      <div class="h-item reveal">
+        <span class="no">No.03</span>
+        <h3>No black boxes</h3>
+        <p>Every number traces to a calculation you can check by hand. If we can't show the working, we don't ship it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-final pad">
+  <span class="eyebrow">That's the pitch</span>
+  <h2>Never do menu-board maths again.</h2>
+  <p class="section-lead" style="margin:0 auto 20px">Scroll back up and play with the demo — or grab whoever's next to you and hand them the phone.</p>
+  <a class="btn" href="#demo">Back to the demo</a>
+</section>
+</main>
+
+<footer class="pad">
+  <a class="logo" href="#top" style="font-size:16px">
+    <span class="logo-mark" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="b3"></span></span>
+    MacroMatch<small>AU</small>
+  </a>
+  <p class="fine">MacroMatch provides general nutrition information and calculation tools only — not medical or dietary advice; individual needs vary. For personalised guidance, see a GP or an Accredited Practising Dietitian. Nutrient reference data includes the Australian Food Composition Database (FSANZ); branded values approximate published nutrition information — check current labels. © 2026 MacroMatch.</p>
+</footer>
+
+<!-- sticky thumb-zone CTA -->
+<div class="bottom-bar" id="bottom-bar" aria-hidden="true">
+  <div class="bar-in">
+    <div class="who"><span id="bar-greet">Good evening</span> · <span id="bar-name">mate</span><b><span class="num" id="bar-cal">620</span> cal left today</b></div>
+    <a class="btn" href="#demo">Try the demo</a>
+  </div>
+</div>
+
+<!-- name sheet -->
+<div class="name-dialog" id="name-dialog" role="dialog" aria-modal="true" aria-labelledby="name-title">
+  <div class="scrim" data-close></div>
+  <div class="name-sheet">
+    <h3 id="name-title">What should we call you?</h3>
+    <p>Just for this demo — nothing is stored or sent anywhere.</p>
+    <label for="name-input" style="position:absolute;left:-9999px">Your name</label>
+    <input id="name-input" type="text" maxlength="20" autocomplete="given-name" placeholder="e.g. Ronan">
+    <div class="row">
+      <button class="btn quiet" type="button" data-close>Cancel</button>
+      <button class="btn" type="button" id="name-save">Save</button>
+    </div>
+  </div>
+</div>
+</div><!-- /shell -->
+
+<script>
+  // ---------- time-aware greeting + live clock ----------
+  var userName = 'mate';   // in-memory only
+  function greeting(h){ return h < 12 ? 'Good morning' : h < 17 ? 'Good arvo' : 'Good evening'; }
+  function fmtTime(d){
+    var h = d.getHours(), m = d.getMinutes(), ap = h >= 12 ? 'pm' : 'am';
+    h = h % 12 || 12;
+    return h + ':' + (m < 10 ? '0' + m : m) + ap;
+  }
+  function paintGreeting(){
+    var now = new Date();
+    var g = greeting(now.getHours());
+    document.getElementById('greet-word').textContent = g;
+    document.getElementById('bar-greet').textContent = g;
+    document.getElementById('hero-time').textContent = fmtTime(now);
+    document.getElementById('greet-name').textContent = userName;
+    document.getElementById('bar-name').textContent = userName;
+  }
+  paintGreeting();
+  setInterval(paintGreeting, 30000);
+
+  // name sheet
+  var dlg = document.getElementById('name-dialog');
+  var nameInput = document.getElementById('name-input');
+  document.getElementById('name-btn').addEventListener('click', function(){
+    dlg.classList.add('open'); nameInput.value = userName === 'mate' ? '' : userName;
+    setTimeout(function(){ nameInput.focus(); }, 50);
+  });
+  dlg.addEventListener('click', function(e){ if (e.target.hasAttribute('data-close')) dlg.classList.remove('open'); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') dlg.classList.remove('open'); });
+  document.getElementById('name-save').addEventListener('click', function(){
+    var v = nameInput.value.trim();
+    userName = v || 'mate';
+    dlg.classList.remove('open');
+    paintGreeting();
+  });
+
+  // ---------- hero mini demo ----------
+  var heroFoods = [
+    {n:"Chicken Bowl (no rice)", v:"GYG",  kcal:330, p:32},
+    {n:"Double Bondi Burger", v:"Oporto",  kcal:610, p:45},
+    {n:"Original Tenders (3)", v:"KFC",    kcal:310, p:24},
+    {n:"Big Mac", v:"McDonald's",          kcal:550, p:27}
+  ];
+  var HERO_PRO = 45;
+  var tilesEl = document.getElementById('tiles');
+  tilesEl.innerHTML = heroFoods.map(function(f,i){ return (
+    '<div class="tile" id="tile-'+i+'"><h4>'+f.n+'</h4><div class="venue">'+f.v+'</div>' +
+    '<div class="macros"><span><b>'+f.kcal+'</b> cal</span><span>'+f.p+' g P</span></div>' +
+    '<div class="state"><svg class="icon sm"><use class="st-icon" href="#i-check"/></svg><span class="st-text"></span></div></div>'); }).join('');
+  var slider = document.getElementById('cal-slider');
+  var raf = false;
+  function heroUpdate(){
+    raf = false;
+    var left = +slider.value;
+    document.getElementById('cal-out').textContent = left;
+    document.getElementById('hero-cal').textContent = left + ' cal';
+    document.getElementById('bar-cal').textContent = left;
+    slider.setAttribute('aria-valuenow', left);
+    slider.setAttribute('aria-valuetext', left + ' calories remaining');
+    var need = (HERO_PRO / left) * 100;
+    heroFoods.forEach(function(f,i){
+      var el = document.getElementById('tile-'+i);
+      var icon = el.querySelector('.st-icon'), text = el.querySelector('.st-text');
+      if (f.kcal <= left){
+        var pace = (f.p / f.kcal) * 100 >= need;
+        el.className = 'tile fits';
+        icon.setAttribute('href', pace ? '#i-bolt' : '#i-check');
+        text.textContent = pace ? 'Fits — on protein pace' : 'Fits your budget';
+      } else {
+        el.className = 'tile over';
+        icon.setAttribute('href', '#i-x');
+        text.textContent = 'Over by ' + (f.kcal - left) + ' cal';
+      }
+    });
+  }
+  slider.addEventListener('input', function(){ if(!raf){ raf = true; requestAnimationFrame(heroUpdate); } });
+  heroUpdate();
+
+  // ---------- full demo ----------
+  var DB = [
+    {n:"Roast Chicken Breast 150g", v:"Coles / Woolies", kcal:240, p:45},
+    {n:"Chicken Bowl (no rice)", v:"GYG", kcal:330, p:32},
+    {n:"Original Tenders (3)", v:"KFC", kcal:310, p:24},
+    {n:"Grilled Chicken Salad", v:"McDonald's", kcal:180, p:25},
+    {n:"6\" Chicken Teriyaki", v:"Subway", kcal:340, p:24},
+    {n:"Double Bondi Burger", v:"Oporto", kcal:610, p:45},
+    {n:"Zinger Burger", v:"KFC", kcal:450, p:22},
+    {n:"Big Mac", v:"McDonald's", kcal:550, p:27},
+    {n:"Whopper Junior", v:"Hungry Jack's", kcal:320, p:15},
+    {n:"High-protein yoghurt pot", v:"Coles / Woolies", kcal:130, p:15},
+    {n:"Musashi protein shake", v:"Coles / Woolies", kcal:220, p:30},
+    {n:"Regular Chips", v:"KFC", kcal:310, p:4},
+    {n:"Simply Grill'd (low-carb)", v:"Grill'd", kcal:360, p:33},
+    {n:"Salmon Sashimi (5 pc)", v:"Sushi bar", kcal:120, p:12}
+  ];
+  var VENUES = ["All"].concat(Array.from(new Set(DB.map(function(f){ return f.v; }))));
+  var state = { cal: 620, pro: 45, venue: "All" };
+  var START = { cal: 620, pro: 45 };
+
+  var chipsEl = document.getElementById('chips');
+  chipsEl.innerHTML = VENUES.map(function(v){
+    return '<button type="button" class="chip" data-v="'+v+'" aria-pressed="'+(v==="All")+'">'+v+'</button>';
+  }).join('');
+  chipsEl.addEventListener('click', function(e){
+    var b = e.target.closest('.chip'); if(!b) return;
+    state.venue = b.dataset.v;
+    chipsEl.querySelectorAll('.chip').forEach(function(c){ c.setAttribute('aria-pressed', c === b ? 'true' : 'false'); });
+    renderDemo();
+  });
+
+  document.querySelectorAll('.stepper button').forEach(function(b){
+    b.addEventListener('click', function(){
+      var d = +b.dataset.d;
+      if (b.dataset.t === 'cal') state.cal = Math.min(Math.max(state.cal + d, 0), 1500);
+      else state.pro = Math.min(Math.max(state.pro + d, 0), 150);
+      renderDemo();
+    });
+  });
+
+  var msgEl = document.getElementById('demo-msg');
+  var msgTimer = null;
+  function toast(html){
+    msgEl.innerHTML = html;
+    clearTimeout(msgTimer);
+    msgTimer = setTimeout(function(){ msgEl.textContent = ''; }, 4000);
+  }
+
+  function renderDemo(){
+    document.getElementById('d-cal-out').innerHTML = state.cal + '<small> cal</small>';
+    document.getElementById('d-pro-out').innerHTML = state.pro + '<small> g</small>';
+    var need = state.cal > 0 && state.pro > 0 ? (state.pro / state.cal) * 100 : 0;
+    var rows = DB
+      .filter(function(f){ return state.venue === 'All' || f.v === state.venue; })
+      .map(function(f){
+        var fits = f.kcal <= state.cal;
+        var pace = fits && need > 0 && (f.p / f.kcal) * 100 >= need;
+        return { f:f, fits:fits, pace:pace, over: f.kcal - state.cal };
+      })
+      .sort(function(a,b){ return (b.pace - a.pace) || (b.fits - a.fits) || (b.f.p - a.f.p); });
+
+    document.getElementById('food-list').innerHTML = rows.map(function(r,i){
+      var cls = r.pace ? 'food pace' : r.fits ? 'food fits' : 'food over';
+      var icon = r.pace ? '#i-bolt' : r.fits ? '#i-check' : '#i-x';
+      var sub = r.pace ? 'On protein pace' : r.fits ? 'Fits your budget' : 'Over by ' + r.over + ' cal';
+      return '<button type="button" class="'+cls+'" data-i="'+DB.indexOf(r.f)+'" '+(r.fits?'':'disabled')+
+             ' aria-label="'+r.f.n+', '+r.f.kcal+' calories, '+r.f.p+' grams protein. '+sub+(r.fits?'. Tap to log.':'')+'">' +
+        '<span class="f-state"><svg class="icon sm"><use href="'+icon+'"/></svg></span>' +
+        '<span class="f-main"><h4>'+r.f.n+'</h4><span>'+r.f.v+' · '+sub+'</span></span>' +
+        '<span class="f-nums"><b>'+r.f.kcal+'</b>'+r.f.p+' g P</span></button>';
+    }).join('');
+  }
+
+  document.getElementById('food-list').addEventListener('click', function(e){
+    var b = e.target.closest('.food'); if(!b || b.disabled) return;
+    var f = DB[+b.dataset.i];
+    state.cal = Math.max(state.cal - f.kcal, 0);
+    state.pro = Math.max(state.pro - f.p, 0);
+    renderDemo();
+    toast('<svg class="icon sm"><use href="#i-check"/></svg><span>Logged ' + f.n + ' — ' + state.cal + ' cal and ' + state.pro + ' g protein to go.</span>');
+  });
+  document.getElementById('demo-reset').addEventListener('click', function(){
+    state.cal = START.cal; state.pro = START.pro;
+    renderDemo();
+    toast('<svg class="icon sm"><use href="#i-check"/></svg><span>Fresh day. ' + START.cal + ' cal on the board.</span>');
+  });
+  renderDemo();
+
+  // ---------- sticky bottom bar (appears after hero) ----------
+  var bar = document.getElementById('bottom-bar');
+  var hero = document.getElementById('top');
+  var demoSec = document.getElementById('demo');
+  function barCheck(){
+    var heroGone = hero.getBoundingClientRect().bottom < 0;
+    var demoRect = demoSec.getBoundingClientRect();
+    var inDemo = demoRect.top < window.innerHeight * .6 && demoRect.bottom > window.innerHeight * .5;
+    var show = heroGone && !inDemo;
+    bar.classList.toggle('show', show);
+    bar.setAttribute('aria-hidden', String(!show));
+  }
+  var ticking = false;
+  window.addEventListener('scroll', function(){
+    if(!ticking){ ticking = true; requestAnimationFrame(function(){ barCheck(); ticking = false; }); }
+  }, {passive:true});
+  barCheck();
+
+  // ---------- staggered reveal ----------
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var revealEls = document.querySelectorAll('.reveal');
+  if (reduce || !('IntersectionObserver' in window)) {
+    revealEls.forEach(function(el){ el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          var sibs = Array.prototype.slice.call(e.target.parentElement.querySelectorAll('.reveal'));
+          e.target.style.transitionDelay = (Math.max(sibs.indexOf(e.target),0) * 40) + 'ms';
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    }, {threshold:.15});
+    revealEls.forEach(function(el){ io.observe(el); });
+  }
+</script>
+</body>
+</html>

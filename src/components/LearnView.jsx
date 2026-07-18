@@ -10,12 +10,12 @@ export function LearnView() {
         <p>Everything the setup wizard assumes, explained properly. Six short reads — no fads, no fear-mongering, just the mechanics.</p>
       </div>
       {LEARN.map((sec, i) => (
-        <div className="card learn-card" key={sec.title}>
+        <div className="card learn-card" key={sec.title} data-open={open === i}>
           <button className="learn-toggle press" aria-expanded={open === i}
             onClick={() => setOpen(open === i ? null : i)}>
-            <span className="dot" style={{ background: sec.dot }} />
+            <span className="no num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
             <h3>{sec.title}</h3>
-            <span className="pm">{open === i ? '−' : '+'}</span>
+            <span className="pm" aria-hidden="true">{open === i ? '−' : '+'}</span>
           </button>
           {open === i && (
             <div className="learn-body">

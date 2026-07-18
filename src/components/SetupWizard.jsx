@@ -21,10 +21,15 @@ export function SetupWizard({ initialProfile, onApply, onGoLearn }) {
 
   return (
     <section className="pad" aria-label="Set up your targets">
+      <div className="wiz-head">
+        <h2>{STEPS[step]}</h2>
+        <span className="stepno num" aria-label={`Step ${step + 1} of ${STEPS.length}`}>
+          {step + 1}/{STEPS.length}
+        </span>
+      </div>
       <div className="wiz-progress" aria-hidden="true">
         {STEPS.map((s, i) => <span key={s} className={i <= step ? 'on' : ''} />)}
       </div>
-      <p className="wiz-step-label">Step {step + 1} of {STEPS.length} — <b>{STEPS[step]}</b></p>
 
       {step === 0 && (
         <InfoCard label="Tell us about you"
@@ -128,10 +133,10 @@ export function SetupWizard({ initialProfile, onApply, onGoLearn }) {
             <Row k={`Resting burn — ${plan.formula.split(' (')[0]}`} v={`${plan.bmr} cal`} />
             <Row k={`× activity (${ACTIVITY.find((a) => a.key === profile.activity).label})`} v={`${plan.tdee} cal`} />
             <Row k={plan.goalObj.label} v={`${plan.adj >= 0 ? '+' : ''}${plan.adj} cal`} />
-            <div className="ledger-row" style={{ borderTop: '2px solid var(--ink)', marginTop: 6, paddingTop: 10 }}>
-              <span className="k" style={{ color: 'var(--ink)', fontWeight: 700 }}>DAILY TARGET</span>
+            <div className="ledger-row total">
+              <span className="k">Daily target</span>
               <span className="leader" />
-              <span className="v num" style={{ fontSize: 16 }}>{plan.kcal} cal</span>
+              <span className="v num">{plan.kcal} cal</span>
             </div>
           </div>
           <div className="macro-tiles">

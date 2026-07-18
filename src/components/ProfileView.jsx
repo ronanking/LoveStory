@@ -68,10 +68,10 @@ export function ProfileView({ state, onSetTarget, onOpenName, onGoWizard }) {
           {row(`Protein ${t.p} g × 4`, t.p * 4)}
           {row(`Carbs ${t.c} g × 4`, t.c * 4)}
           {row(`Fat ${t.f} g × 9`, t.f * 9)}
-          <div className="ledger-row" style={{ borderTop: '2px solid var(--ink)', marginTop: 6, paddingTop: 10 }}>
-            <span className="k" style={{ color: 'var(--ink)', fontWeight: 700 }}>DAY BUDGET</span>
+          <div className="ledger-row total">
+            <span className="k">Day budget</span>
             <span className="leader" />
-            <span className="v num" style={{ fontSize: 16 }}>{t.kcal} cal</span>
+            <span className="v num">{t.kcal} cal</span>
           </div>
         </div>
       </InfoCard>

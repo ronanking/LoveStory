@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { MEALS } from '../lib/constants';
 import { greeting, fmtTime, proteinPressure, pressureBand, PRESSURE_READS } from '../lib/calc';
 import { Icon } from './Icon';
-import { InfoCard } from './InfoButton';
+
+const BAND_NAMES = ['Cruise', 'On track', 'Lean', 'Tight'];
 
 export function TodayView({ state, remaining, eaten, onOpenName, onOpenEat, onDeleteEntry, onGoWizard }) {
   const [now, setNow] = useState(() => new Date());
+  const [infoOpen, setInfoOpen] = useState(false);
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(t);
@@ -18,85 +20,90 @@ export function TodayView({ state, remaining, eaten, onOpenName, onOpenEat, onDe
     ? { label: 'Protein done', msg: 'Whatever fits your remaining calories is fair game.' }
     : PRESSURE_READS[band];
 
-  const macroRows = [
-    { k: 'Protein', dot: 'var(--dot-p)', left: r.p, t: state.targets.p, u: 'g' },
-    { k: 'Carbs', dot: 'var(--dot-c)', left: r.c, t: state.targets.c, u: 'g' },
-    { k: 'Fat', dot: 'var(--dot-f)', left: r.f, t: state.targets.f, u: 'g' },
+  const tallies = [
+    { k: 'Protein', c: 'var(--protein)', left: r.p, t: state.targets.p, u: 'g' },
+    { k: 'Carbs', c: 'var(--carbs)', left: r.c, t: state.targets.c, u: 'g' },
+    { k: 'Fat', c: 'var(--fat)', left: r.f, t: state.targets.f, u: 'g' },
   ];
 
   return (
     <section className="pad" aria-label="Today">
       <div className="greet-block">
         <p className="greet-line">
-          <span>{greeting(now.getHours())}</span>,{' '}
+          {greeting(now.getHours())},{' '}
           <button className="name-btn press" onClick={onOpenName} aria-label="Change your name">
             <span>{state.name}</span><Icon id="i-pen" />
           </button>
         </p>
         <div className="big-remain">
-          <span>{r.kcal}</span><small> cal left today</small>
+          <span className="n num">{r.kcal}</span>
+          <span className="u">cal left today</span>
         </div>
         <p className="greet-q">
-          It's <b className="num">{fmtTime(now)}</b> — <b>what'll it be?</b>
+          It's <span className="num" style={{ fontWeight: 900 }}>{fmtTime(now)}</span> — <b>what'll it be?</b>
         </p>
       </div>
 
       {!state.wizardDone && (
         <div className="card nudge">
-          <h3>Using default targets</h3>
+          <h3>Running on default targets</h3>
           <p>Answer a few quick questions and we'll calculate yours — showing every step of the maths.</p>
           <button className="btn-light press" onClick={onGoWizard}>Calculate my targets</button>
         </div>
       )}
 
+      {/* THE BOARD — budget, tallies and the pressure verdict in one place */}
       <div className="card">
         <div className="card-head">
-          <span className="label">Left today</span>
-          <span className="label num">
+          <span className="label">Still on the board</span>
+          <span className="board-date num">
             {now.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
           </span>
         </div>
-        <div className="macro-bars">
-          {macroRows.map((m) => {
+        <div className="tally">
+          {tallies.map((m) => {
             const pct = m.t ? Math.min(((m.t - m.left) / m.t) * 100, 100) : 0;
             return (
-              <div key={m.k}>
-                <div className="ledger-row">
-                  <span className="dot" style={{ background: m.dot }} />
-                  <span className="k">{m.k}</span>
-                  <span className="leader" />
-                  <span className="v num">{m.left} {m.u} left</span>
-                </div>
-                <div className="mini-track"><i style={{ width: pct + '%' }} /></div>
+              <div className="tally-row" key={m.k}>
+                <span className="k"><span className="swatch" style={{ background: m.c }} />{m.k}</span>
+                <span className="track"><i style={{ width: pct + '%', '--tc': m.c }} /></span>
+                <span className="v num">{m.left}<small>{m.u} left</small></span>
               </div>
             );
           })}
         </div>
-      </div>
 
-      <InfoCard label="Protein pressure"
-        info="The protein you still need, divided by the calories you have left (per 100 cal). Low = relaxed, almost anything works. High = your remaining calories must come from lean, protein-dense food. Chicken breast is ~19 g/100 cal; hot chips are ~1.">
-        <div className="pp-strip">
-          <div className="pp-num">
-            <span>{pp.toFixed(1)}</span>
-            <small>g P / 100 cal left</small>
-          </div>
-          <div className="pp-scale">
-            <div className="pp-segs">
-              {[0, 1, 2, 3].map((i) => (
-                <span key={i} className={i <= band && pp > 0 ? (band >= 2 ? 'on hot' : 'on') : ''} />
+        <div className="verdict">
+          <div className="verdict-head">
+            <span className="pp num" aria-label={`Protein pressure ${pp.toFixed(1)} grams per 100 calories`}>
+              {pp.toFixed(1)}
+            </span>
+            <div className="bands" aria-hidden="true">
+              {BAND_NAMES.map((b, i) => (
+                <span key={b} className={i === band && pp > 0 ? 'on' : ''}>{b}</span>
               ))}
             </div>
-            <div className="pp-band"><span>cruise</span><span>on track</span><span>lean</span><span>tight</span></div>
           </div>
+          <p><b>{read.label}.</b> {read.msg}</p>
         </div>
-        <p className="pp-read"><b>{read.label}.</b> {read.msg}</p>
-      </InfoCard>
+        <div className="card-head" style={{ margin: '10px 0 0' }}>
+          <button className="info-btn press" aria-label="What is this number?" aria-expanded={infoOpen}
+            onClick={() => setInfoOpen((o) => !o)}>?</button>
+          <span className="label dim">g protein / 100 cal left</span>
+        </div>
+        {infoOpen && (
+          <div className="info-txt">
+            The protein you still need, divided by the calories you have left (per 100 cal).
+            Low = relaxed, almost anything works. High = your remaining calories must come from
+            lean, protein-dense food. Chicken breast is ~19 g/100 cal; hot chips are ~1.
+          </div>
+        )}
+      </div>
 
       <div className="card">
         <div className="card-head">
-          <span className="label">Food diary</span>
-          <span className="label num">{eaten.kcal} cal · {eaten.p}P/{eaten.c}C/{eaten.f}F</span>
+          <span className="label">The day so far</span>
+          <span className="label dim num">{eaten.kcal} cal · {eaten.p}P/{eaten.c}C/{eaten.f}F</span>
         </div>
         <div>
           {MEALS.map((m) => {
@@ -106,13 +113,13 @@ export function TodayView({ state, remaining, eaten, onOpenName, onOpenEat, onDe
               <div className="meal" key={m}>
                 <div className="meal-head">
                   <h3>{m}</h3>
-                  <span className="tot num">{tot ? `${tot} cal` : '—'}</span>
+                  <span className="tot num">{tot ? `${tot} cal` : <small>—</small>}</span>
                 </div>
-                {list.length ? list.map((x) => (
+                {list.map((x) => (
                   <div className="entry" key={x.id}>
                     <div className="e-main">
                       <h4>{x.n}</h4>
-                      <span>{x.v} · {x.p}P/{x.c}C/{x.f}F</span>
+                      <span className="num">{x.v} · {x.p}P/{x.c}C/{x.f}F</span>
                     </div>
                     <span className="e-kcal num">{x.kcal}</span>
                     <button className="e-del press" aria-label={`Remove ${x.n}`}
@@ -120,7 +127,8 @@ export function TodayView({ state, remaining, eaten, onOpenName, onOpenEat, onDe
                       <Icon id="i-x" sm />
                     </button>
                   </div>
-                )) : <p className="empty-line">Nothing logged yet.</p>}
+                ))}
+                {!list.length && <p className="empty-line">Nothing logged yet.</p>}
                 <button className="meal-add press" onClick={() => onOpenEat(m)}>
                   <Icon id="i-fork" sm />See what fits
                 </button>

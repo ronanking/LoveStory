@@ -62,8 +62,8 @@ export function EatSheet({ open, meal, foods, foodsSource, remaining, onLog, onC
               <Icon id="i-x" />
             </button>
           </div>
-          <p className="sheet-sub">
-            {r.kcal} cal · {r.p} g protein left · logging to {meal}
+          <p className="sheet-sub num">
+            <span className="hl">{r.kcal} cal</span> · <span className="hl">{r.p} g protein</span> left · logging to {meal}
           </p>
           <div className="search-row">
             <Icon id="i-search" />
@@ -90,7 +90,7 @@ export function EatSheet({ open, meal, foods, foodsSource, remaining, onLog, onC
             <input type="checkbox" checked={wiggle} onChange={(e) => setWiggle(e.target.checked)} />
             10% wiggle room
           </label>
-          <span className="label num">{fitCount} fit</span>
+          <span className="fit-count num">{fitCount} fit</span>
         </div>
 
         <div className="sheet-list">
@@ -103,7 +103,7 @@ export function EatSheet({ open, meal, foods, foodsSource, remaining, onLog, onC
           {rows.map((x, i) => {
             const cls = x.pace ? 'food pace' : x.fits ? 'food fits' : 'food over';
             const icon = x.pace ? 'i-bolt' : x.fits ? 'i-check' : 'i-x';
-            const sub = x.pace ? 'Fits — on protein pace' : x.fits ? "Fits what's left" : 'Over by ' + x.over.join(', ');
+            const sub = x.fits ? "Fits what's left" : 'Over by ' + x.over.join(', ');
             return (
               <button key={x.f.id ?? i} type="button" className={`${cls} press`} disabled={!x.fits}
                 aria-label={`${x.f.name}, ${x.f.kcal} calories, ${x.f.p} grams protein. ${sub}${x.fits ? `. Tap to log to ${meal}.` : ''}`}
@@ -111,9 +111,12 @@ export function EatSheet({ open, meal, foods, foodsSource, remaining, onLog, onC
                 <span className="f-state"><Icon id={icon} sm /></span>
                 <span className="f-main">
                   <h4>{x.f.name}</h4>
-                  <span>{x.f.venue}{x.f.serving ? ` · ${x.f.serving}` : ''} · {sub}</span>
+                  <span className="num">
+                    {x.pace && <span className="pace-tag">Pace</span>}
+                    {x.f.venue}{x.f.serving ? ` · ${x.f.serving}` : ''} · {sub}
+                  </span>
                 </span>
-                <span className="f-nums"><b>{x.f.kcal}</b>{x.f.p} g P</span>
+                <span className="f-nums num"><b>{x.f.kcal}</b>{x.f.p} g P</span>
               </button>
             );
           })}

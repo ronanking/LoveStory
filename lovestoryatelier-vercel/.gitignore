@@ -22,3 +22,7 @@ reference/
 # The trailing * matters: Blender writes .blend1/.blend2 rollback backups
 # alongside the save, and they are just as large.
 blender/source/*.blend*
+
+# Cycles writes the poster as PNG; the site ships the WebP and the LQIP beside
+# it, so the 1.4 MB intermediate is not tracked.
+public/posters/*.png

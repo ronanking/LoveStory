@@ -77,11 +77,18 @@ blender --background --factory-startup \
 
 That is the canonical command. It writes:
 
-| File | Purpose |
-|---|---|
-| `public/models/veil-study.glb` | Draco-compressed mesh loaded by the R3F scene |
-| `public/posters/veil-study.png` | Pre-rendered fallback (→ `.webp` if Pillow is present) |
-| `blender/source/veil-study.blend` | Editable scene, only with `--save-blend` |
+| File | Purpose | Tracked |
+|---|---|---|
+| `public/models/veil-study.glb` | Draco-compressed mesh loaded by the R3F scene — **52 KB** | ✅ |
+| `public/posters/veil-study.webp` | Pre-rendered fallback — **208 KB** | ✅ |
+| `public/posters/veil-study-lqip.webp` | 32 px blur placeholder — **536 B** | ✅ |
+| `public/posters/veil-study.png` | Cycles intermediate, 1.4 MB | ❌ gitignored |
+| `blender/source/veil-study.blend` | Editable scene, only with `--save-blend` | ❌ gitignored (regenerable, 2.7 MB, churns) |
+
+The WebP and LQIP require Pillow. Blender's bundled Python may not have it —
+`pip3 install pillow` (the Debian `python3-pil` package failed to load its
+`_imaging` C extension here). Without Pillow the script keeps the PNG and tells
+you the `cwebp` command to run.
 
 Runtime is roughly 40–90 s for the sim and decimation, plus 3–8 minutes for the
 Cycles poster on CPU. Drop `--render` to regenerate only the GLB, which is the
@@ -126,6 +133,32 @@ fast path while iterating on the drape.
 7. **Studio** — broad key softbox, champagne rim, low bounce, 85 mm lens at
    f/2.8 with DOF. World is brand cream at low strength; the render is filmed
    on a transparent background so it composites over any section.
+
+## Art direction — what three review passes changed
+
+Each render was reviewed and corrected rather than accepted. Recorded because
+the failures are not obvious in advance and are easy to reintroduce:
+
+| Pass | What it looked like | Cause | Fix |
+|---|---|---|---|
+| 1 | A narrow opaque column, comb cropped out of frame | Pinned a near-point (8.5 cm) so the sheet funnelled inward; camera on hand-guessed Euler angles | Pin across a real comb width; aim with a `TRACK_TO` constraint |
+| 2 | Heavy satin, correct folds, mostly empty frame | Panel only 1.15 m wide — not enough fabric to flare; per-layer alpha far too high | Camera 5.6 m → 3.5 m; alpha 0.10–0.30 → 0.035–0.115 |
+| 3 | Cathedral silhouette, elegant drape ✅ | — | Width 1.15 m → **2.6 m**; alpha → 0.014–0.048 |
+
+**The width was the substantive error.** A veil's fullness comes from gathering
+a wide panel onto a narrow comb — at 1.15 m no amount of cloth-sim tuning would
+have produced a cathedral silhouette.
+
+### Still tunable
+
+The current material reads slightly closer to silk than to sheer tulle. Stacked
+layers compound: at ~0.05 alpha per layer, twenty overlapping layers reach
+~0.64 opacity, and the folds concentrate that further. To take it sheerer,
+lower the two `alpha_ramp` element colours in `build_tulle_material()`.
+
+This has deliberately **not** been dialled in further, because matching the
+fabric to Love Story Atelier's actual veils needs their photography as
+reference. Tune it against a real product shot rather than in the abstract.
 
 ## Regenerating after a change
 

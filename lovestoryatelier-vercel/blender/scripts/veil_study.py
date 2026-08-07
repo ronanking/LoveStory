@@ -547,7 +547,10 @@ def render_poster(outdir: str, samples: int,
 
 
 def _try_webp(png_path: str) -> None:
-    """Convert to WebP when Pillow is present in Blender's bundled Python."""
+    """
+    Produce the two assets the site actually ships: a WebP poster and a tiny
+    LQIP for the blur placeholder. The PNG is only ever an intermediate.
+    """
     try:
         from PIL import Image  # type: ignore[import-not-found]
     except ImportError:
@@ -555,9 +558,22 @@ def _try_webp(png_path: str) -> None:
               "Convert with: cwebp -q 82 veil-study.png -o veil-study.webp")
         return
 
-    webp_path = os.path.splitext(png_path)[0] + ".webp"
-    Image.open(png_path).save(webp_path, "WEBP", quality=82, method=6)
-    print(f"[veil] converted {webp_path}")
+    stem = os.path.splitext(png_path)[0]
+    image = Image.open(png_path)
+
+    webp_path = stem + ".webp"
+    image.save(webp_path, "WEBP", quality=82, method=6)
+
+    # 32px-wide placeholder, inlined as a blurDataURL so the poster slot never
+    # renders empty and never shifts layout.
+    lqip_path = stem + "-lqip.webp"
+    image.convert("RGBA").resize((32, 40), Image.LANCZOS).save(
+        lqip_path, "WEBP", quality=60
+    )
+
+    print(f"[veil] converted {webp_path} "
+          f"({os.path.getsize(webp_path) / 1024:.0f} KB) + LQIP "
+          f"({os.path.getsize(lqip_path)} B)")
 
 
 def main() -> None:

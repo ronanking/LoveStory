@@ -1,0 +1,34 @@
+.stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* Never intercepts pointer events — the veil is decoration behind type. */
+  pointer-events: none;
+}
+
+.poster {
+  position: absolute;
+  top: 50%;
+  left: 58%;
+  width: auto;
+  height: 118%;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  opacity: 0.62;
+  /* Falls away as the WebGL layer takes over, so there is no visible swap. */
+  transition: opacity var(--dur-slow) var(--ease-fabric);
+}
+
+.poster[data-live="true"] {
+  opacity: 0;
+}
+
+/* On narrow screens the veil moves behind the type and softens further, so it
+   never competes with the copy for contrast. */
+@media (max-width: 860px) {
+  .poster {
+    left: 50%;
+    height: 84%;
+    opacity: 0.34;
+  }
+}

@@ -26,3 +26,9 @@ blender/source/*.blend*
 # Cycles writes the poster as PNG; the site ships the WebP and the LQIP beside
 # it, so the 1.4 MB intermediate is not tracked.
 public/posters/*.png
+
+# Draco decoder is vendored from three at install time — see README.
+# Tracked deliberately so deploys do not depend on an external CDN.
+
+# TypeScript incremental build cache
+*.tsbuildinfo

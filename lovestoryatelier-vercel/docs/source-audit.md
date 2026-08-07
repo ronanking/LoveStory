@@ -9,6 +9,37 @@ because the inputs those are derived from do not exist on this machine. What it
 records instead is exactly what was searched, what was found, and what is
 needed to proceed.
 
+## Root cause: the build does not run on the author's PC
+
+The source folders were supplied as Windows paths:
+
+```
+C:\Users\Ronan\Downloads\lovestoryatelier-animated
+C:\Users\Ronan\Downloads\drive-download-20260807T022108Z-1-001
+```
+
+This session does **not** execute on that machine. It runs in an ephemeral
+Linux container in Anthropic's cloud (Claude Code remote execution), created
+fresh from a `git clone` at session start:
+
+```
+container: container_01WKfVmtncNmSn8vDkuHKcgU--claude_code_remote--05d03d
+kernel:    Linux 6.18.5-fc-v18   /   4 cores, 15 GB RAM
+```
+
+There is no shared filesystem, no drive mapping and no remote-desktop bridge to
+`C:\`. The same applies to applications: Blender being open on the author's PC
+has no bearing here, which is why Blender had to be installed inside the
+container before any of the 3D work could run.
+
+Files reach this container by exactly two mechanisms: the git clone performed
+at startup, and network fetches that survive the egress policy. Chat
+attachments do not land on its disk — which is why several rounds of supplying
+the material produced nothing on the filesystem.
+
+**Therefore: committing the folders to a branch of `ronanking/LoveStory` is the
+delivery route, and it is the only one.**
+
 ## What was expected
 
 | Archive | Contents per brief | Found |

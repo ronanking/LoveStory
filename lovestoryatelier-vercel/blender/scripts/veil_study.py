@@ -144,10 +144,16 @@ def build_veil_mesh(width: float, length: float, res_u: int, res_v: int):
     return obj
 
 
-def add_pin_group(obj, gather_span: float = 0.16) -> None:
+def add_pin_group(obj, gather_span: float = 0.05,
+                  comb_half_width: float = 0.17) -> None:
     """
-    Pin the vertices nearest the comb. Everything else is free to fall, which
-    is what produces the gathered fan of folds under the comb.
+    Pin the vertices along the comb. Everything else is free to fall.
+
+    `comb_half_width` is the parameter that decides whether this looks like a
+    veil or a rolled towel. Pinning a near-point (the first attempt used 0.085)
+    lets the whole sheet funnel inward under gravity and the result reads as a
+    narrow column. A real comb holds ~34 cm of gathered fabric, so the cloth
+    spreads from a line rather than collapsing to a point.
     """
     group = obj.vertex_groups.new(name="pin")
     mesh = obj.data
@@ -155,9 +161,10 @@ def add_pin_group(obj, gather_span: float = 0.16) -> None:
 
     pinned = [
         v.index for v in mesh.vertices
-        if v.co.z > top_z - gather_span and abs(v.co.x) < 0.085
+        if v.co.z > top_z - gather_span and abs(v.co.x) < comb_half_width
     ]
     group.add(pinned, 1.0, "REPLACE")
+    print(f"[veil] pinned {len(pinned)} verts along the comb")
 
 
 def add_shoulder_form():
@@ -321,18 +328,22 @@ def build_tulle_material(obj):
     fresnel.location = (-420, 60)
     fresnel.inputs["IOR"].default_value = 1.32
 
+    # Per-layer opacity must stay very low. Tulle only looks solid because you
+    # are seeing many layers at once — bake that solidity into the material and
+    # stacked folds render as an opaque sheet. The first pass used 0.10–0.30
+    # here with a 0.55 Fresnel add, which blew out to near-white.
     alpha_ramp = nodes.new("ShaderNodeValToRGB")
     alpha_ramp.location = (-220, -180)
     alpha_ramp.color_ramp.elements[0].position = 0.36
-    alpha_ramp.color_ramp.elements[0].color = (0.10, 0.10, 0.10, 1.0)
+    alpha_ramp.color_ramp.elements[0].color = (0.035, 0.035, 0.035, 1.0)
     alpha_ramp.color_ramp.elements[1].position = 0.70
-    alpha_ramp.color_ramp.elements[1].color = (0.30, 0.30, 0.30, 1.0)
+    alpha_ramp.color_ramp.elements[1].color = (0.115, 0.115, 0.115, 1.0)
     links.new(noise.outputs["Fac"], alpha_ramp.inputs["Fac"])
 
     mix_alpha = nodes.new("ShaderNodeMixRGB")
     mix_alpha.location = (40, -120)
     mix_alpha.blend_type = "ADD"
-    mix_alpha.inputs["Fac"].default_value = 0.55
+    mix_alpha.inputs["Fac"].default_value = 0.22
     links.new(alpha_ramp.outputs["Color"], mix_alpha.inputs["Color1"])
     links.new(fresnel.outputs["Fac"], mix_alpha.inputs["Color2"])
 
@@ -369,24 +380,42 @@ def build_studio(length: float):
         light.rotation_euler = rot
         return light
 
+    # Energies are roughly a third of the first pass. Sheer fabric with a high
+    # transparent-bounce count accumulates light across every layer, so values
+    # that look sane on a solid object blow the veil out to flat white.
     area("KeySoftbox", (2.1, -2.6, 2.9), (math.radians(62), 0, math.radians(40)),
-         2.4, 420.0, CREAM)
+         2.4, 150.0, CREAM)
     area("RimLight", (-2.5, 1.9, 2.6), (math.radians(72), 0, math.radians(-126)),
-         1.6, 260.0, SOFT_CHAMPAGNE)
+         1.6, 95.0, SOFT_CHAMPAGNE)
     area("Bounce", (0.0, -1.4, 0.25), (math.radians(-16), 0, 0),
-         3.0, 90.0, CHAMPAGNE)
+         3.0, 40.0, CHAMPAGNE)
 
     cam_data = bpy.data.cameras.new("PosterCam")
-    cam_data.lens = 85.0
+    # 50 mm, not 85 mm: the veil is over two metres tall and an 85 forces the
+    # camera so far back that DOF stops reading, or crops the comb when close.
+    cam_data.lens = 50.0
     cam_data.sensor_width = 36.0
     cam_data.dof.use_dof = True
-    cam_data.dof.focus_distance = 4.4
-    cam_data.dof.aperture_fstop = 2.8
+    cam_data.dof.aperture_fstop = 3.5
 
     cam = bpy.data.objects.new("PosterCam", cam_data)
     bpy.context.collection.objects.link(cam)
-    cam.location = (1.35, -4.2, length * 0.62)
-    cam.rotation_euler = (math.radians(80.5), 0.0, math.radians(18.5))
+    cam.location = (1.9, -5.6, length * 0.80)
+
+    # Aim with a constraint at the veil's mid-height rather than hand-tuned
+    # Euler angles. The first pass guessed the rotation and cropped the comb
+    # straight out of frame.
+    target = bpy.data.objects.new("CamTarget", None)
+    bpy.context.collection.objects.link(target)
+    target.location = (0.0, 0.0, length * 0.52)
+
+    track = cam.constraints.new(type="TRACK_TO")
+    track.target = target
+    track.track_axis = "TRACK_NEGATIVE_Z"
+    track.up_axis = "UP_Y"
+
+    cam_data.dof.focus_object = target
+
     bpy.context.scene.camera = cam
     return cam
 

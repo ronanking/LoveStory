@@ -1,0 +1,22 @@
+node_modules/
+.next/
+out/
+dist/
+.env
+.env.local
+*.local
+.vercel
+.DS_Store
+
+# Playwright
+test-results/
+playwright-report/
+
+# Extracted source archives — reference only, never shipped. Large, and the
+# originals live with the brand rather than in git.
+reference/
+
+# Regenerable Blender scene. veil_study.py is the source of truth; the .blend
+# is a 2.7 MB binary that churns on every run, so it is not tracked.
+# Recreate with: ./blender/scripts/build-veil.sh
+blender/source/*.blend

@@ -34,7 +34,17 @@ signature asset is now real and generated. See
   route but is refused `403` by Shopify's bot protection. Details and evidence
   in the audit.
 
-### Blender — signature silk-tulle veil ✅
+### Blender — signature silk-tulle veil ✅ COMPLETE
+
+**Shipped assets:** `veil-study.glb` (52 KB, Draco, 15,676 tris, alpha-blended,
+double-sided) · `veil-study.webp` (208 KB poster) · `veil-study-lqip.webp`
+(536 B blur placeholder).
+
+Three review-and-correct passes, documented in `blender/README.md`. The
+substantive error was panel width, not cloth-solver settings: a veil's fullness
+comes from gathering a wide panel onto a narrow comb, and at 1.15 m there was
+never enough fabric to flare. At 2.6 m the cathedral silhouette appears.
+
 - Installed Blender 4.0.2 (it was not present). Two environment fixes were
   needed and are documented in `blender/README.md`: `apt-get update` before
   install, and `python3-numpy`, without which the glTF exporter fails at the

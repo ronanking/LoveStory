@@ -19,4 +19,6 @@ reference/
 # Regenerable Blender scene. veil_study.py is the source of truth; the .blend
 # is a 2.7 MB binary that churns on every run, so it is not tracked.
 # Recreate with: ./blender/scripts/build-veil.sh
-blender/source/*.blend
+# The trailing * matters: Blender writes .blend1/.blend2 rollback backups
+# alongside the save, and they are just as large.
+blender/source/*.blend*

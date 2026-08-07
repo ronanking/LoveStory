@@ -56,8 +56,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="veil_study")
     parser.add_argument("--frames", type=int, default=90,
                         help="cloth sim frames to settle the drape")
-    parser.add_argument("--width", type=float, default=1.15,
-                        help="veil width in metres at the hem")
+    parser.add_argument("--width", type=float, default=2.6,
+                        help="veil width in metres at the hem. Cathedral veils "
+                             "are wide — the width gathered onto a ~34 cm comb "
+                             "is what creates fullness. 1.15 reads as a scarf.")
     parser.add_argument("--length", type=float, default=2.35,
                         help="veil length in metres (cathedral)")
     parser.add_argument("--res-u", type=int, default=96,
@@ -335,15 +337,15 @@ def build_tulle_material(obj):
     alpha_ramp = nodes.new("ShaderNodeValToRGB")
     alpha_ramp.location = (-220, -180)
     alpha_ramp.color_ramp.elements[0].position = 0.36
-    alpha_ramp.color_ramp.elements[0].color = (0.035, 0.035, 0.035, 1.0)
+    alpha_ramp.color_ramp.elements[0].color = (0.014, 0.014, 0.014, 1.0)
     alpha_ramp.color_ramp.elements[1].position = 0.70
-    alpha_ramp.color_ramp.elements[1].color = (0.115, 0.115, 0.115, 1.0)
+    alpha_ramp.color_ramp.elements[1].color = (0.048, 0.048, 0.048, 1.0)
     links.new(noise.outputs["Fac"], alpha_ramp.inputs["Fac"])
 
     mix_alpha = nodes.new("ShaderNodeMixRGB")
     mix_alpha.location = (40, -120)
     mix_alpha.blend_type = "ADD"
-    mix_alpha.inputs["Fac"].default_value = 0.22
+    mix_alpha.inputs["Fac"].default_value = 0.10
     links.new(alpha_ramp.outputs["Color"], mix_alpha.inputs["Color1"])
     links.new(fresnel.outputs["Fac"], mix_alpha.inputs["Color2"])
 
@@ -400,7 +402,9 @@ def build_studio(length: float):
 
     cam = bpy.data.objects.new("PosterCam", cam_data)
     bpy.context.collection.objects.link(cam)
-    cam.location = (1.9, -5.6, length * 0.80)
+    # Pulled in close: at 5.6 m the veil filled about a quarter of the frame
+    # and the poster was mostly empty background.
+    cam.location = (1.15, -3.5, length * 0.78)
 
     # Aim with a constraint at the veil's mid-height rather than hand-tuned
     # Euler angles. The first pass guessed the rotation and cropped the comb

@@ -70,6 +70,10 @@ def parse_args() -> argparse.Namespace:
                         help="also render the poster fallback image")
     parser.add_argument("--samples", type=int, default=256,
                         help="Cycles samples for the poster render")
+    parser.add_argument("--poster-width", type=int, default=1600,
+                        help="poster render width in pixels")
+    parser.add_argument("--poster-height", type=int, default=2000,
+                        help="poster render height in pixels")
     parser.add_argument("--save-blend", action="store_true",
                         help="save the editable .blend to blender/source/")
     parser.add_argument("--outdir", default=REPO_ROOT,
@@ -419,25 +423,77 @@ def export_glb(obj, outdir: str) -> str:
                 kwargs.pop(key)
         bpy.ops.export_scene.gltf(**kwargs)
 
-    print(f"[veil] exported {path} ({os.path.getsize(path) / 1024:.0f} KB)")
+    size_kb = os.path.getsize(path) / 1024
+    print(f"[veil] exported {path} ({size_kb:.0f} KB)")
+
+    # The exporter accepts the Draco flags even when the native encoder library
+    # is absent, in which case compression silently no-ops. Distro builds
+    # (Ubuntu's included) often ship the Python glue without
+    # libextern_draco.so, so verify rather than trust the flag.
+    if not _glb_uses_draco(path):
+        print("[veil] WARNING: Draco compression did not apply — the native "
+              "encoder is missing from this Blender build. The GLB is "
+              "uncompressed. Compress it as a post-step with:\n"
+              "         npx --yes @gltf-transform/cli optimize "
+              f"{os.path.relpath(path)} {os.path.relpath(path)} "
+              "--compress draco --texture-compress webp")
     return path
 
 
-def render_poster(outdir: str, samples: int) -> str:
+def _glb_uses_draco(path: str) -> bool:
+    """Read the GLB's JSON chunk and check for the Draco extension."""
+    import json
+    import struct
+
+    with open(path, "rb") as handle:
+        data = handle.read(1 << 20)  # the JSON chunk is near the front
+    if data[:4] != b"glTF":
+        return False
+    offset = 12
+    while offset + 8 <= len(data):
+        chunk_len, _ = struct.unpack("<II", data[offset:offset + 8])
+        tag = data[offset + 4:offset + 8]
+        if tag == b"JSON":
+            try:
+                doc = json.loads(data[offset + 8:offset + 8 + chunk_len])
+            except (ValueError, UnicodeDecodeError):
+                return False
+            return "KHR_draco_mesh_compression" in doc.get("extensionsUsed", [])
+        offset += 8 + chunk_len
+    return False
+
+
+def render_poster(outdir: str, samples: int,
+                  width: int = 1600, height: int = 2000) -> str:
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
     try:
         scene.cycles.device = "CPU"
-        scene.cycles.samples = samples
-        scene.cycles.use_denoising = True
         # Transparent bounces matter enormously for stacked sheer fabric.
         scene.cycles.transparent_max_bounces = 32
         scene.cycles.transmission_bounces = 24
-    except AttributeError:
+
+        # Denoising is not always compiled in — distro builds frequently ship
+        # Cycles without OpenImageDenoiser, and enabling it there fails the
+        # render outright rather than degrading. Detect, and buy the quality
+        # back with extra samples when it is unavailable.
+        available = [
+            e.identifier
+            for e in scene.cycles.bl_rna.properties["denoiser"].enum_items
+        ]
+        if available:
+            scene.cycles.use_denoising = True
+            scene.cycles.samples = samples
+        else:
+            scene.cycles.use_denoising = False
+            scene.cycles.samples = samples * 3
+            print(f"[veil] no denoiser in this build — rendering "
+                  f"{scene.cycles.samples} samples instead of {samples}")
+    except (AttributeError, KeyError):
         pass
 
-    scene.render.resolution_x = 1600
-    scene.render.resolution_y = 2000
+    scene.render.resolution_x = width
+    scene.render.resolution_y = height
     scene.render.resolution_percentage = 100
     scene.render.film_transparent = True
     scene.render.image_settings.file_format = "PNG"
@@ -486,7 +542,8 @@ def main() -> None:
     export_glb(veil, args.outdir)
 
     if args.render:
-        render_poster(args.outdir, args.samples)
+        render_poster(args.outdir, args.samples,
+                      args.poster_width, args.poster_height)
 
     if args.save_blend:
         blend_path = os.path.join(

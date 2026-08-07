@@ -13,7 +13,7 @@ outputs, not placeholders.
 Blender was *not* present initially — it was installed during the build with
 `apt-get update && apt-get install -y --no-install-recommends blender`.
 
-### Two gotchas worth recording
+### Four gotchas worth recording
 
 1. **`apt-get install blender` fails with exit 100 on a stale package index**
    — the mesa driver dependencies 404. Run `apt-get update` first.
@@ -22,6 +22,36 @@ Blender was *not* present initially — it was installed during the build with
    then `bpy.ops.export_scene.gltf` dies with `ModuleNotFoundError: No module
    named 'numpy'`. Fix with `apt-get install -y python3-numpy` (Ubuntu's
    Blender links the system Python, so the system package is the right one).
+3. **Draco compression silently no-ops on this build.** The exporter *accepts*
+   every `export_draco_mesh_compression_*` flag, but the native encoder
+   (`libextern_draco.so`) is absent, so the GLB comes out uncompressed with no
+   error — 936 KB rather than the expected ~70 KB. The script now verifies the
+   written file for `KHR_draco_mesh_compression` and warns when it is missing,
+   instead of trusting the flag. Compression is handled as a post-step
+   (see below), which is reliable regardless of how Blender was built.
+4. **Cycles here has no denoiser at all** — `scene.cycles.denoiser` enumerates
+   empty, and setting `use_denoising = True` fails the render outright with
+   `Error: Build without OpenImageDenoiser` rather than degrading gracefully.
+   The script detects this and triples the sample count to compensate.
+
+## Build (recommended)
+
+One command does everything, including the compression post-step:
+
+```bash
+./blender/scripts/build-veil.sh          # full quality
+./blender/scripts/build-veil.sh --fast   # quick drape iteration, no poster
+```
+
+It runs Blender, compresses the GLB with `@gltf-transform/cli`, and then
+**asserts** that Draco actually applied and that the material kept its alpha
+blending and double-sidedness — so a silently-uncompressed or visually broken
+asset fails the build rather than shipping.
+
+Measured on this machine: **936 KB → 66 KB** (93% smaller). Welding merged
+duplicate vertices 23,797 → 13,264 while triangles only fell 28,800 → 26,073,
+and `alphaMode: BLEND`, `doubleSided: true`, sheen, specular and IOR all
+survived intact.
 
 ## Install
 
@@ -35,7 +65,7 @@ Blender was *not* present initially — it was installed during the build with
 Verify with `blender --version` — 3.6 or newer is required (the glTF exporter's
 Draco flags and the 4.x Principled BSDF socket names are both handled).
 
-## Generate
+## Generate (manual, without the wrapper)
 
 From the **project root** (`lovestoryatelier-vercel/`), not from `blender/`:
 
@@ -66,7 +96,8 @@ fast path while iterating on the drape.
 | `--length` | `2.35` | Cathedral length in metres. |
 | `--res-u` / `--res-v` | `96` / `150` | Sim grid density. Raise for finer folds, then rely on decimation. |
 | `--target-tris` | `34000` | Decimate budget for the exported mesh. |
-| `--samples` | `256` | Cycles samples for the poster. |
+| `--samples` | `256` | Cycles samples for the poster. Tripled automatically when no denoiser is available. |
+| `--poster-width` / `--poster-height` | `1600` / `2000` | Poster resolution. Lower these on few-core machines — Cycles renders sheer fabric slowly because of the transparent bounce count. |
 | `--render` | off | Also render the fallback poster. |
 | `--save-blend` | off | Also write the editable scene. |
 

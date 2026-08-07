@@ -74,7 +74,9 @@ def parse_args() -> argparse.Namespace:
                         help="save the editable .blend to blender/source/")
     parser.add_argument("--outdir", default=REPO_ROOT,
                         help="project root that contains public/")
-    return parser.parse_args()
+    # Must pass the sliced list explicitly — argparse would otherwise fall back
+    # to sys.argv[1:], which still holds Blender's own flags.
+    return parser.parse_args(argv)
 
 
 def reset_scene() -> None:

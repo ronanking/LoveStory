@@ -6,32 +6,30 @@ reproducible Python script — there are no manual `.blend` edits to lose.
 
 ## Status in this environment
 
-**Blender is not installed on the build machine, so the assets below have not
-been generated yet.** Nothing in `public/models/` or `public/posters/` is a
-Blender output at time of writing; the site uses the procedural WebGL fallback
-until the pipeline is run.
+✅ **Blender 4.0.2 is installed and the pipeline has been run successfully.**
+The assets in `public/models/` and `public/posters/` are genuine Blender
+outputs, not placeholders.
 
-Locations searched before concluding this:
+Blender was *not* present initially — it was installed during the build with
+`apt-get update && apt-get install -y --no-install-recommends blender`.
 
-```
-which blender          → not found
-which blender-4.0      → not found
-/usr/share/blender     → absent
-/opt/blender*          → absent
-/snap/blender          → absent
-/Applications/Blender.app → absent (non-macOS host)
-```
+### Two gotchas worth recording
 
-Run the commands below on any machine with Blender 3.6 LTS or 4.x and commit
-the two generated files.
+1. **`apt-get install blender` fails with exit 100 on a stale package index**
+   — the mesa driver dependencies 404. Run `apt-get update` first.
+2. **Ubuntu's Blender package does not pull in numpy**, and the glTF exporter
+   imports it unconditionally. Without it, everything up to export succeeds and
+   then `bpy.ops.export_scene.gltf` dies with `ModuleNotFoundError: No module
+   named 'numpy'`. Fix with `apt-get install -y python3-numpy` (Ubuntu's
+   Blender links the system Python, so the system package is the right one).
 
 ## Install
 
 | Platform | Command |
 |---|---|
 | macOS | `brew install --cask blender` |
-| Debian/Ubuntu | `sudo snap install blender --classic` |
-| Fedora | `sudo dnf install blender` |
+| Debian/Ubuntu | `sudo apt-get update && sudo apt-get install -y blender python3-numpy` |
+| Fedora | `sudo dnf install blender python3-numpy` |
 | Any | Download from <https://www.blender.org/download/> |
 
 Verify with `blender --version` — 3.6 or newer is required (the glTF exporter's

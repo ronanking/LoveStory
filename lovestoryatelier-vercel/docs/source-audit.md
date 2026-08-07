@@ -51,8 +51,47 @@ point in its history. The repository name is the only connection.
 
 | Service | State |
 |---|---|
-| Shopify | Was connected to **NaviGuard** (`naviguard.store`), not Love Story Atelier. Switched away on request toward a store named "pratice"; the connector now requires re-authorisation, which cannot be completed from a non-interactive session. |
+| Shopify | Was connected to **NaviGuard** (`naviguard.store`), not Love Story Atelier. Switched away on request toward a store named "pratice"; the connector now requires re-authorisation, which cannot be completed from a non-interactive session. Not to be used per instruction. |
 | GitHub | Scoped to `ronanking/lovestory`. `list_repos` shows only `ronanking/LoveStory` and `ronanking/Tradieconnect`. |
+
+## Network egress — why the live site could not be read
+
+Reading <https://lovestoryatelier.com/> was authorised, but both available
+routes are blocked, for two different reasons.
+
+**Container egress is restricted by organisation policy.** The agent proxy
+answered `403` to `CONNECT` and logged the denial:
+
+```json
+{ "kind": "connect_rejected",
+  "detail": "gateway answered 403 to CONNECT (policy denial or upstream failure)",
+  "host": "lovestoryatelier.com:443" }
+```
+
+Reachability test across the hosts that would matter:
+
+| Host | Result |
+|---|---|
+| `lovestoryatelier.com` | ❌ denied |
+| `cdn.shopify.com` | ❌ denied — so even with image URLs, assets could not be pulled |
+| `www.etsy.com` | ❌ denied |
+| `raw.githubusercontent.com` | ✅ reachable |
+
+The proxy README is explicit that policy denials must be reported rather than
+retried or routed around, so no workaround was attempted.
+
+**WebFetch (a separate, Anthropic-side route) returns `403` from the site
+itself** — Shopify bot protection rejecting a non-browser client. Tried and
+refused: `/`, `www.` variant, `/collections/veils`, `/products.json?limit=250`.
+
+**Consequence:** GitHub is the only reachable route into this container.
+Committing the source material to a branch of `ronanking/LoveStory` is
+therefore the one delivery method guaranteed to work.
+
+Public search results do confirm the business (Brisbane studio, European tulle,
+custom embroidery and monograms, cathedral/fingertip veils,
+`info@lovestoryatelier.com`), but search snippets are not a substitute for the
+theme source or the photography library, and are not used as content here.
 
 ## Build toolchain available
 

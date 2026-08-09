@@ -1,0 +1,75 @@
+<section class="ls-section" style="padding-bottom:40px;" data-reveal>
+  <div class="ls-container">
+    <div class="contact-grid">
+
+      {%- comment -%} Left — copy + tiles {%- endcomment -%}
+      <div style="display:flex;flex-direction:column;gap:28px;">
+        <div class="ls-eyebrow">Get in touch</div>
+        <h2 class="contact-title">
+          We'd love to hear about <em>your day</em>.
+        </h2>
+        <p style="font-size:16.5px;color:var(--ls-ink-82);line-height:1.6;max-width:520px;">
+          Whether you have a question about a piece in the collection or want to start designing a bespoke veil — fill in the form below and we'll be in touch with a sketch.
+        </p>
+        <div class="contact-tiles">
+          <div class="contact-tile">
+            <span class="contact-tile__icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 7 9-7"/></svg>
+            </span>
+            <div>
+              <div class="contact-tile__label">Email</div>
+              <div class="contact-tile__value">{{ section.settings.email | default: 'info@lovestoryatelier.com' }}</div>
+              <div class="contact-tile__note">Most replies within 48 hours</div>
+            </div>
+          </div>
+          <div class="contact-tile">
+            <span class="contact-tile__icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88"/><path d="M14.5 14.5 20 20"/><path d="M8.12 8.12 12 12"/></svg>
+            </span>
+            <div>
+              <div class="contact-tile__label">Studio</div>
+              <div class="contact-tile__value">Brisbane, Queensland · by appointment</div>
+              <div class="contact-tile__note">Address shared on booking</div>
+            </div>
+          </div>
+          <div class="contact-tile">
+            <span class="contact-tile__icon">{%- render 'icon-instagram', size: 18 -%}</span>
+            <div>
+              <div class="contact-tile__label">Instagram</div>
+              <div class="contact-tile__value">@lovestoryatelier</div>
+              <div class="contact-tile__note">Behind-the-scenes from the studio</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {%- comment -%} Right — photo {%- endcomment -%}
+      {%- if section.settings.photo != blank -%}
+        <div class="ls-photo" style="border-radius:12px;border:1px solid var(--ls-border);aspect-ratio:4/5;max-width:520px;justify-self:end;">
+          <img
+            src="{{ section.settings.photo | image_url: width: 1040 }}"
+            alt="{{ section.settings.photo.alt | default: 'A recent bride in her veil' }}"
+            loading="lazy"
+            style="object-position:55% 35%;"
+          >
+          <span class="ls-photo__eyebrow">Recent · Brisbane</span>
+        </div>
+      {%- endif -%}
+
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Contact info",
+  "tag": "div",
+  "settings": [
+    { "type": "text",         "id": "email", "label": "Email address", "default": "info@lovestoryatelier.com" },
+    { "type": "image_picker", "id": "photo", "label": "Side photograph" }
+  ],
+  "presets": [
+    { "name": "Contact info" }
+  ]
+}
+{% endschema %}

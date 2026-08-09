@@ -1,0 +1,27 @@
+{
+  "general": {
+    "password_page": {
+      "login_form_heading": "Enter using password",
+      "login_form_password_label": "Password",
+      "login_form_password_placeholder": "Your password",
+      "login_form_submit": "Enter",
+      "login_prompt": "To see our new site first, enter the password below:"
+    }
+  },
+  "cart": {
+    "general": {
+      "title": "Your bag",
+      "empty": "Your bag is empty.",
+      "continue_browsing": "Continue browsing",
+      "subtotal": "Subtotal",
+      "checkout": "Checkout"
+    }
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Add to bag",
+      "sold_out": "Enquire",
+      "unavailable": "Unavailable"
+    }
+  }
+}

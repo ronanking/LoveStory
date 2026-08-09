@@ -1,0 +1,21 @@
+{
+  "sections": {
+    "page-header": {
+      "type": "page-header",
+      "settings": {
+        "eyebrow": "The collection",
+        "title": "Veils, made by hand in European tulle.",
+        "body": "Shop our signature collection of romantic, handcrafted veils — every piece made-to-order in our Brisbane studio. Would you prefer to customise a veil to your gown? Email info@lovestoryatelier.com to begin."
+      }
+    },
+    "main-collection": {
+      "type": "main-collection",
+      "settings": {}
+    },
+    "final-cta": {
+      "type": "final-cta",
+      "settings": {}
+    }
+  },
+  "order": ["page-header", "main-collection", "final-cta"]
+}

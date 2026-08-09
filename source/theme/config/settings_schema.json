@@ -1,0 +1,76 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Love Story Atelier",
+    "theme_version": "1.0.0",
+    "theme_author": "Love Story Atelier",
+    "theme_documentation_url": "",
+    "theme_support_url": ""
+  },
+  {
+    "name": "Colors",
+    "settings": [
+      {
+        "type": "color",
+        "id": "color_cream",
+        "label": "Page background (cream)",
+        "default": "#f7f4ed"
+      },
+      {
+        "type": "color",
+        "id": "color_charcoal",
+        "label": "Primary ink (charcoal)",
+        "default": "#1c1c1c"
+      },
+      {
+        "type": "color",
+        "id": "color_champagne",
+        "label": "Accent (champagne)",
+        "default": "#c9ac82"
+      },
+      {
+        "type": "color",
+        "id": "color_blush",
+        "label": "Accent (blush)",
+        "default": "#d8b6a6"
+      }
+    ]
+  },
+  {
+    "name": "Typography",
+    "settings": [
+      {
+        "type": "font_picker",
+        "id": "type_display_font",
+        "label": "Display / heading font",
+        "default": "cormorant_garamond_n4"
+      },
+      {
+        "type": "font_picker",
+        "id": "type_body_font",
+        "label": "Body / UI font",
+        "default": "plus_jakarta_sans_n4"
+      }
+    ]
+  },
+  {
+    "name": "Social media",
+    "settings": [
+      {
+        "type": "url",
+        "id": "social_instagram_link",
+        "label": "Instagram"
+      },
+      {
+        "type": "url",
+        "id": "social_tiktok_link",
+        "label": "TikTok"
+      },
+      {
+        "type": "url",
+        "id": "social_pinterest_link",
+        "label": "Pinterest"
+      }
+    ]
+  }
+]

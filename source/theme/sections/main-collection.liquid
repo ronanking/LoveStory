@@ -1,0 +1,320 @@
+<section class="ls-section" style="padding-top:80px;padding-bottom:120px;">
+  <div class="ls-container">
+
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:40px;flex-wrap:wrap;">
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        {%- assign piece_word = 'pieces' -%}
+        {%- if collection.products_count == 1 -%}{%- assign piece_word = 'piece' -%}{%- endif -%}
+        <div class="ls-eyebrow" data-veil-count>The collection · {{ collection.products_count }} {{ piece_word }}</div>
+        <p style="font-size:14px;color:var(--ls-muted);">Each silhouette is a starting point — every piece is then drafted to your gown.</p>
+      </div>
+      <div class="veils-filters" data-veils-filter>
+        {%- assign filters = "All silhouettes,Cathedral,Chapel,Fingertip,Mantilla,Two-tier,Lace,Plain" | split: "," -%}
+        {%- for f in filters -%}
+          <button
+            class="filter-chip{% if forloop.first %} active{% endif %}"
+            data-filter="{{ f }}"
+            aria-pressed="{{ forloop.first }}"
+            type="button"
+          >{{ f }}</button>
+        {%- endfor -%}
+      </div>
+    </div>
+
+    <div class="veils-grid">
+      {%- for product in collection.products -%}
+        {%- assign tags_str = product.tags | join: "," -%}
+        <a
+          href="{{ product.url }}"
+          class="veil-card"
+          data-veil-card
+          data-tags="{{ tags_str }}"
+        >
+          <div class="ls-photo veil-card__img" style="aspect-ratio:3/4;">
+            {%- if product.featured_image != blank -%}
+              <img
+                src="{{ product.featured_image | image_url: width: 800 }}"
+                alt="{{ product.featured_image.alt | default: product.title }}"
+                loading="lazy"
+                style="object-position:{{ product.metafields.atelier.focal | default: '50% 40%' }};"
+              >
+              <span class="ls-photo__eyebrow">{{ product.tags | first }}</span>
+            {%- endif -%}
+          </div>
+          <div class="veil-card__body">
+            <h3 class="veil-card__name">{{ product.title }}</h3>
+            <div class="veil-card__silhouette">{{ product.metafields.atelier.silhouette | default: product.type }}</div>
+            <div class="veil-card__edge">
+              Finished with <em>{{ product.metafields.atelier.edge | default: 'hand-finished edge' }}</em>
+            </div>
+            <div class="veil-card__footer">
+              <span class="veil-card__mto">
+                {%- if product.price == 0 -%}
+                  Made to order
+                {%- else -%}
+                  From {{ product.price | money }}
+                {%- endif -%}
+              </span>
+              <span style="color:var(--ls-ink-60);">{%- render 'icon-arrow-up-right', size: 13 -%}</span>
+            </div>
+          </div>
+        </a>
+      {%- else -%}
+        <a href="/pages/contact#enquiry" class="veil-card" data-veil-card data-tags="Cathedral,Lace">
+          <div class="ls-photo veil-card__img" style="aspect-ratio:3/4;">
+            <img src="{{ 'ls-bride-cathedral.jpg' | asset_url }}" alt="Cathedral Veil · Soft silk tulle" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 20%;">
+            <span class="ls-photo__eyebrow">Cathedral</span>
+          </div>
+          <div class="veil-card__body">
+            <h3 class="veil-card__name">Cathedral Veil · Golden Hour</h3>
+            <div class="veil-card__silhouette">Cathedral · 300 cm</div>
+            <div class="veil-card__edge">Finished with <em>soft cut edge</em></div>
+            <div class="veil-card__footer"><span class="veil-card__mto">Made to order</span><span style="color:var(--ls-ink-60);">{%- render 'icon-arrow-up-right', size: 13 -%}</span></div>
+          </div>
+        </a>
+        <a href="/pages/contact#enquiry" class="veil-card" data-veil-card data-tags="Mantilla,Lace">
+          <div class="ls-photo veil-card__img" style="aspect-ratio:3/4;">
+            <img src="{{ 'ls-golden-lace.jpg' | asset_url }}" alt="Mantilla Veil · Full Chantilly lace" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 30%;">
+            <span class="ls-photo__eyebrow">Mantilla</span>
+          </div>
+          <div class="veil-card__body">
+            <h3 class="veil-card__name">Mantilla · Full Lace Trim</h3>
+            <div class="veil-card__silhouette">Mantilla · 220 cm</div>
+            <div class="veil-card__edge">Finished with <em>full Chantilly lace border</em></div>
+            <div class="veil-card__footer"><span class="veil-card__mto">Made to order</span><span style="color:var(--ls-ink-60);">{%- render 'icon-arrow-up-right', size: 13 -%}</span></div>
+          </div>
+        </a>
+        <a href="/pages/contact#enquiry" class="veil-card" data-veil-card data-tags="Two-tier,Lace">
+          <div class="ls-photo veil-card__img" style="aspect-ratio:3/4;">
+            <img src="{{ 'ls-portrait-bw.jpg' | asset_url }}" alt="Two-tier Veil · European tulle" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 20%;">
+            <span class="ls-photo__eyebrow">Two-tier</span>
+          </div>
+          <div class="veil-card__body">
+            <h3 class="veil-card__name">Two-tier · Chapel Length</h3>
+            <div class="veil-card__silhouette">Two-tier · 180 cm</div>
+            <div class="veil-card__edge">Finished with <em>delicate lace edge</em></div>
+            <div class="veil-card__footer"><span class="veil-card__mto">Made to order</span><span style="color:var(--ls-ink-60);">{%- render 'icon-arrow-up-right', size: 13 -%}</span></div>
+          </div>
+        </a>
+        <a href="/pages/contact#enquiry" class="veil-card" data-veil-card data-tags="Cathedral,Plain">
+          <div class="ls-photo veil-card__img" style="aspect-ratio:3/4;">
+            <img src="{{ 'ls-veil-back.jpg' | asset_url }}" alt="Cathedral Veil · from behind" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 25%;">
+            <span class="ls-photo__eyebrow">Cathedral</span>
+          </div>
+          <div class="veil-card__body">
+            <h3 class="veil-card__name">Cathedral Veil · Silk Plain</h3>
+            <div class="veil-card__silhouette">Cathedral · 280 cm</div>
+            <div class="veil-card__edge">Finished with <em>plain cut edge</em></div>
+            <div class="veil-card__footer"><span class="veil-card__mto">Made to order</span><span style="color:var(--ls-ink-60);">{%- render 'icon-arrow-up-right', size: 13 -%}</span></div>
+          </div>
+        </a>
+        <a href="/pages/contact#enquiry" class="veil-card" data-veil-card data-tags="Fingertip,Lace">
+          <div class="ls-photo veil-card__img" style="aspect-ratio:3/4;">
+            <img src="{{ 'ls-bride-blusher.jpg' | asset_url }}" alt="Blusher Cap Veil · Chantilly lace" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 25%;">
+            <span class="ls-photo__eyebrow">Fingertip</span>
+          </div>
+          <div class="veil-card__body">
+            <h3 class="veil-card__name">Blusher Cap · Lace Trim</h3>
+            <div class="veil-card__silhouette">Fingertip · 100 cm</div>
+            <div class="veil-card__edge">Finished with <em>Chantilly lace edge</em></div>
+            <div class="veil-card__footer"><span class="veil-card__mto">Made to order</span><span style="color:var(--ls-ink-60);">{%- render 'icon-arrow-up-right', size: 13 -%}</span></div>
+          </div>
+        </a>
+        <a href="/pages/contact#enquiry" class="veil-card" data-veil-card data-tags="Mantilla,Lace">
+          <div class="ls-photo veil-card__img" style="aspect-ratio:3/4;">
+            <img src="{{ 'ls-mantilla-couple.jpg' | asset_url }}" alt="Mantilla · Lace appliqué border" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 30%;">
+            <span class="ls-photo__eyebrow">Mantilla</span>
+          </div>
+          <div class="veil-card__body">
+            <h3 class="veil-card__name">Mantilla · Lace Appliqué</h3>
+            <div class="veil-card__silhouette">Mantilla · 200 cm</div>
+            <div class="veil-card__edge">Finished with <em>hand-applied lace motifs</em></div>
+            <div class="veil-card__footer"><span class="veil-card__mto">Made to order</span><span style="color:var(--ls-ink-60);">{%- render 'icon-arrow-up-right', size: 13 -%}</span></div>
+          </div>
+        </a>
+        <a href="/pages/contact#enquiry" class="veil-card" data-veil-card data-tags="Mantilla,Lace">
+          <div class="ls-photo veil-card__img" style="aspect-ratio:3/4;">
+            <img src="{{ 'ls-church-veil.jpg' | asset_url }}" alt="Mantilla · Church light dramatic drape" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 25%;">
+            <span class="ls-photo__eyebrow">Mantilla</span>
+          </div>
+          <div class="veil-card__body">
+            <h3 class="veil-card__name">Mantilla · Silk Tulle</h3>
+            <div class="veil-card__silhouette">Mantilla · 240 cm</div>
+            <div class="veil-card__edge">Finished with <em>vintage lace trim</em></div>
+            <div class="veil-card__footer"><span class="veil-card__mto">Made to order</span><span style="color:var(--ls-ink-60);">{%- render 'icon-arrow-up-right', size: 13 -%}</span></div>
+          </div>
+        </a>
+        <a href="/pages/contact#enquiry" class="veil-card" data-veil-card data-tags="Cathedral,Lace">
+          <div class="ls-photo veil-card__img" style="aspect-ratio:3/4;">
+            <img src="{{ 'ls-ceremony.jpg' | asset_url }}" alt="Cathedral Veil · Ceremony at the altar" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 20%;">
+            <span class="ls-photo__eyebrow">Cathedral</span>
+          </div>
+          <div class="veil-card__body">
+            <h3 class="veil-card__name">Cathedral · Ceremony Veil</h3>
+            <div class="veil-card__silhouette">Cathedral · 300 cm</div>
+            <div class="veil-card__edge">Finished with <em>Chantilly lace edge</em></div>
+            <div class="veil-card__footer"><span class="veil-card__mto">Made to order</span><span style="color:var(--ls-ink-60);">{%- render 'icon-arrow-up-right', size: 13 -%}</span></div>
+          </div>
+        </a>
+        <a href="/pages/contact#enquiry" class="veil-card" data-veil-card data-tags="Chapel,Plain">
+          <div class="ls-photo veil-card__img" style="aspect-ratio:3/4;">
+            <img src="{{ 'ls-cobblestone.jpg' | asset_url }}" alt="Chapel Veil · European tulle" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 30%;">
+            <span class="ls-photo__eyebrow">Chapel</span>
+          </div>
+          <div class="veil-card__body">
+            <h3 class="veil-card__name">Chapel Veil · European Tulle</h3>
+            <div class="veil-card__silhouette">Chapel · 180 cm</div>
+            <div class="veil-card__edge">Finished with <em>soft cut edge</em></div>
+            <div class="veil-card__footer"><span class="veil-card__mto">Made to order</span><span style="color:var(--ls-ink-60);">{%- render 'icon-arrow-up-right', size: 13 -%}</span></div>
+          </div>
+        </a>
+        <a href="/pages/contact#enquiry" class="veil-card" data-veil-card data-tags="Fingertip,Lace">
+          <div class="ls-photo veil-card__img" style="aspect-ratio:3/4;">
+            <img src="{{ 'ls-lace-closeup.jpg' | asset_url }}" alt="Fingertip Veil · Chantilly lace detail" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 40%;">
+            <span class="ls-photo__eyebrow">Fingertip</span>
+          </div>
+          <div class="veil-card__body">
+            <h3 class="veil-card__name">Fingertip · Chantilly Detail</h3>
+            <div class="veil-card__silhouette">Fingertip · 110 cm</div>
+            <div class="veil-card__edge">Finished with <em>Chantilly lace border</em></div>
+            <div class="veil-card__footer"><span class="veil-card__mto">Made to order</span><span style="color:var(--ls-ink-60);">{%- render 'icon-arrow-up-right', size: 13 -%}</span></div>
+          </div>
+        </a>
+        <a href="/pages/contact#enquiry" class="veil-card" data-veil-card data-tags="Cathedral,Plain">
+          <div class="ls-photo veil-card__img" style="aspect-ratio:3/4;">
+            <img src="{{ 'ls-veil-bw.jpg' | asset_url }}" alt="Cathedral Veil · Silk tulle editorial" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 20%;">
+            <span class="ls-photo__eyebrow">Cathedral</span>
+          </div>
+          <div class="veil-card__body">
+            <h3 class="veil-card__name">Cathedral · Editorial Silk</h3>
+            <div class="veil-card__silhouette">Cathedral · 320 cm</div>
+            <div class="veil-card__edge">Finished with <em>raw silk cut edge</em></div>
+            <div class="veil-card__footer"><span class="veil-card__mto">Made to order</span><span style="color:var(--ls-ink-60);">{%- render 'icon-arrow-up-right', size: 13 -%}</span></div>
+          </div>
+        </a>
+        <a href="/pages/contact#enquiry" class="veil-card" data-veil-card data-tags="Chapel,Plain">
+          <div class="ls-photo veil-card__img" style="aspect-ratio:3/4;">
+            <img src="{{ 'ls-walking.jpg' | asset_url }}" alt="Chapel Veil · walking length soft tulle" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 30%;">
+            <span class="ls-photo__eyebrow">Chapel</span>
+          </div>
+          <div class="veil-card__body">
+            <h3 class="veil-card__name">Chapel Veil · Soft Tulle</h3>
+            <div class="veil-card__silhouette">Chapel · 160 cm</div>
+            <div class="veil-card__edge">Finished with <em>plain hand-rolled edge</em></div>
+            <div class="veil-card__footer"><span class="veil-card__mto">Made to order</span><span style="color:var(--ls-ink-60);">{%- render 'icon-arrow-up-right', size: 13 -%}</span></div>
+          </div>
+        </a>
+      {%- endfor -%}
+    </div>
+
+    <div class="silhouette-guide" data-sg-carousel>
+
+      <div style="text-align:center;margin-bottom:52px;">
+        <div class="ls-eyebrow">Veil Length Guide</div>
+        <h2 style="font-family:var(--ls-font-display);font-size:clamp(28px,3.5vw,40px);font-weight:400;margin-top:10px;">Find your <em>silhouette</em></h2>
+        <p style="font-size:14px;color:var(--ls-muted);margin-top:10px;max-width:520px;margin-left:auto;margin-right:auto;">Each silhouette tells a different story. Click through to find the length that suits your gown and your moment.</p>
+      </div>
+
+      <div class="sg-nav">
+        <button class="sg-arrow sg-arrow--prev" aria-label="Previous silhouette" type="button">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M5.5 2L10 7L5.5 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="sg-stage">
+          <div class="sg-photo-wrap" data-sg-photo>
+            <img src="{{ 'ls-bride-blusher.jpg' | asset_url }}" alt="Blusher veil" loading="lazy" style="object-position:50% 15%;">
+          </div>
+          <div class="sg-photo-wrap" data-sg-photo>
+            <img src="{{ 'ls-portrait-bw.jpg' | asset_url }}" alt="Fingertip veil" loading="lazy" style="object-position:50% 20%;">
+          </div>
+          <div class="sg-photo-wrap" data-sg-photo>
+            <img src="{{ 'ls-cobblestone.jpg' | asset_url }}" alt="Chapel veil" loading="lazy" style="object-position:50% 25%;">
+          </div>
+          <div class="sg-photo-wrap" data-sg-photo>
+            <img src="{{ 'ls-church-veil.jpg' | asset_url }}" alt="Mantilla veil" loading="lazy" style="object-position:50% 20%;">
+          </div>
+          <div class="sg-photo-wrap" data-sg-photo>
+            <img src="{{ 'ls-bride-cathedral.jpg' | asset_url }}" alt="Cathedral veil" loading="lazy" style="object-position:50% 20%;">
+          </div>
+        </div>
+        <button class="sg-arrow sg-arrow--next" aria-label="Next silhouette" type="button">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M5.5 2L10 7L5.5 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <div class="sg-panels">
+
+        <div class="sg-panel" data-sg-panel>
+          <div class="sg-length-bar"><div class="sg-length-fill" style="--lw:25%;"></div></div>
+          <div class="sg-panel__name">Blusher</div>
+          <div class="sg-panel__cm">~ 80 cm</div>
+          <p class="sg-panel__desc">The most intimate silhouette — falling to the elbow, it frames your features without competing with the gown. Perfect for fitted or structured dresses where you want the dress to be the centrepiece. Often paired with a longer back layer for dramatic photographs, keeping the front soft and unassuming.</p>
+          <button class="sg-panel__cta" type="button" data-sg-filter="Fingertip">View this style ↓</button>
+        </div>
+
+        <div class="sg-panel" data-sg-panel>
+          <div class="sg-length-bar"><div class="sg-length-fill" style="--lw:34%;"></div></div>
+          <div class="sg-panel__name">Fingertip</div>
+          <div class="sg-panel__cm">~ 110 cm</div>
+          <p class="sg-panel__desc">The most universally flattering length — reaching your fingertips when arms are relaxed at your sides. It moves beautifully as you walk and works across every gown style, from ballgown to sheath to A-line. Long enough to feel truly bridal, effortless enough to dance in all evening. A perennial favourite for good reason.</p>
+          <button class="sg-panel__cta" type="button" data-sg-filter="Fingertip">View this style ↓</button>
+        </div>
+
+        <div class="sg-panel" data-sg-panel>
+          <div class="sg-length-bar"><div class="sg-length-fill" style="--lw:53%;"></div></div>
+          <div class="sg-panel__name">Chapel</div>
+          <div class="sg-panel__cm">~ 170 cm</div>
+          <p class="sg-panel__desc">Falls just beyond the gown's train, creating a dramatic entrance without the full cathedral commitment. It flows effortlessly down the aisle and photographs beautifully from behind, adding length and movement to every step. The ideal choice for semi-formal to formal ceremonies where you want presence without grandeur.</p>
+          <button class="sg-panel__cta" type="button" data-sg-filter="Chapel">View this style ↓</button>
+        </div>
+
+        <div class="sg-panel" data-sg-panel>
+          <div class="sg-length-bar"><div class="sg-length-fill" style="--lw:66%;"></div></div>
+          <div class="sg-panel__name">Mantilla</div>
+          <div class="sg-panel__cm">~ 210 cm</div>
+          <p class="sg-panel__desc">A circular veil draped over the head, framing the face — often edged in intricate lace that becomes part of the hairstyle itself. The most traditional of silhouettes, rooted in ceremony and deeply romantic. It requires no back attachment, sitting naturally over the crown and cascading to the shoulders and beyond.</p>
+          <button class="sg-panel__cta" type="button" data-sg-filter="Mantilla">View this style ↓</button>
+        </div>
+
+        <div class="sg-panel" data-sg-panel>
+          <div class="sg-length-bar"><div class="sg-length-fill" style="--lw:100%;"></div></div>
+          <div class="sg-panel__name">Cathedral</div>
+          <div class="sg-panel__cm">~ 320 cm</div>
+          <p class="sg-panel__desc">Trails two metres and beyond behind you — the grandest statement in bridal. Reserved for the most formal of ceremonies, it commands the aisle and transforms the procession into a moment you will never forget. Often crafted as a single tier for maximum drama. This is the veil that stops the room.</p>
+          <button class="sg-panel__cta" type="button" data-sg-filter="Cathedral">View this style ↓</button>
+        </div>
+
+      </div>
+
+      <div class="sg-dots">
+        <button class="sg-dot" type="button" aria-label="Blusher"></button>
+        <button class="sg-dot" type="button" aria-label="Fingertip"></button>
+        <button class="sg-dot" type="button" aria-label="Chapel"></button>
+        <button class="sg-dot" type="button" aria-label="Mantilla"></button>
+        <button class="sg-dot" type="button" aria-label="Cathedral"></button>
+      </div>
+
+    </div>
+
+    <div class="customise-rail">
+      <div>
+        <div class="ls-eyebrow">None of these quite right?</div>
+        <h3 class="customise-rail__title">Customise a veil to <em>your gown</em>.</h3>
+        <p class="customise-rail__body">
+          Email a photo of your gown to <strong style="font-weight:500;">info@lovestoryatelier.com</strong> to
+          start designing your bespoke veil — length, fabric, edge, and any embroidery, all chosen with you.
+        </p>
+      </div>
+      <a href="{{ pages['custom'].url | default: '/pages/custom' }}" class="btn btn--primary btn--lg">
+        Start a custom veil {%- render 'icon-arrow-right', size: 15 -%}
+      </a>
+    </div>
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collection grid",
+  "tag": "div"
+}
+{% endschema %}

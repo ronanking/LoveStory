@@ -1,0 +1,18 @@
+<section class="ls-section" style="padding-top:120px;padding-bottom:160px;text-align:center;">
+  <div class="ls-container" style="max-width:560px;">
+    <p class="ls-eyebrow" style="margin-bottom:16px;">404</p>
+    <h1 style="font-family:var(--ls-font-display);font-size:clamp(32px,5vw,56px);font-weight:400;color:var(--ls-charcoal);margin:0 0 20px;">Page not found</h1>
+    <p style="font-size:16px;color:var(--ls-ink-60);line-height:1.7;margin:0 0 40px;">The page you were looking for doesn't exist. It may have been moved or removed.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="{{ routes.root_url }}" class="btn btn--primary btn--md">Back to home</a>
+      <a href="{{ routes.collections_url }}/veils" class="btn btn--ghost btn--md">Browse veils</a>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "404 page",
+  "tag": "div"
+}
+{% endschema %}

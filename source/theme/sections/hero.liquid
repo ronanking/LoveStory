@@ -1,0 +1,134 @@
+<section class="hero" id="top" data-reveal>
+  <div class="hero__grid">
+
+    {%- comment -%} Left — editorial copy {%- endcomment -%}
+    <div class="hero__copy">
+      <div style="display:flex;flex-direction:column;gap:28px;">
+        <div class="ls-eyebrow">Bespoke bridal · Made to order in Brisbane</div>
+
+        <h1 class="hero__headline">
+          {{ section.settings.headline | default: 'Your dream veil,' }}<br>
+          <em>{{ section.settings.headline_italic | default: 'made to order.' }}</em>
+        </h1>
+
+        <p class="hero__body">
+          {{ section.settings.body | default: 'We believe in redefining elegance and tradition for the modern bride. Every veil and accessory is thoughtfully designed to complement your gown — and tell your individual story. Made by hand in our Brisbane studio.' }}
+        </p>
+
+        <div class="hero__btns">
+          <a href="#enquiry" class="btn btn--primary btn--lg">
+            Start your custom veil {%- render 'icon-arrow-right', size: 15 -%}
+          </a>
+          <a href="{{ routes.collections_url }}/veils" class="btn btn--ghost btn--lg">
+            Explore the collection
+          </a>
+        </div>
+      </div>
+
+      {%- comment -%} Trust strip {%- endcomment -%}
+      <div class="hero__trust">
+        <div>
+          <div class="hero__stat-value"><em>72 hrs</em></div>
+          <div class="hero__stat-label">Studio dispatch</div>
+        </div>
+        <div class="hero__divider" aria-hidden="true"></div>
+        <div>
+          <div class="hero__stat-value"><em>European</em> tulle</div>
+          <div class="hero__stat-label">Luxurious, handmade</div>
+        </div>
+        <div class="hero__divider" aria-hidden="true"></div>
+        <div>
+          <div class="hero__stat-value"><em>Worldwide</em> shipping</div>
+          <div class="hero__stat-label">Complimentary over $300 AUD</div>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} Right — hero slideshow {%- endcomment -%}
+    <div class="hero__image hero-slideshow">
+      {%- if section.settings.hero_image != blank -%}
+        <div class="hero-slide active">
+          <img src="{{ section.settings.hero_image | image_url: width: 1200 }}" alt="{{ section.settings.hero_image.alt | default: 'A bride wearing a Love Story Atelier veil' }}" loading="eager" fetchpriority="high" style="object-position:{{ section.settings.hero_image_focal | default: '60% 30%' }};">
+        </div>
+        {%- if section.settings.hero_image_2 != blank -%}
+          <div class="hero-slide">
+            <img src="{{ section.settings.hero_image_2 | image_url: width: 1200 }}" alt="{{ section.settings.hero_image_2.alt | default: 'A bride wearing a Love Story Atelier veil' }}" loading="lazy" style="object-position:{{ section.settings.hero_image_2_focal | default: '50% 30%' }};">
+          </div>
+        {%- endif -%}
+        {%- if section.settings.hero_image_3 != blank -%}
+          <div class="hero-slide">
+            <img src="{{ section.settings.hero_image_3 | image_url: width: 1200 }}" alt="{{ section.settings.hero_image_3.alt | default: 'A bride wearing a Love Story Atelier veil' }}" loading="lazy" style="object-position:{{ section.settings.hero_image_3_focal | default: '50% 30%' }};">
+          </div>
+        {%- endif -%}
+      {%- else -%}
+        <div class="hero-slide active">
+          <img src="{{ 'ls-hero.jpg' | asset_url }}" alt="A bride in her Love Story Atelier veil" loading="eager" fetchpriority="high" decoding="async" style="object-position:60% 25%;">
+        </div>
+        <div class="hero-slide">
+          <img src="{{ 'ls-bride-cathedral.jpg' | asset_url }}" alt="Bride under cathedral veil" loading="lazy" style="object-position:50% 20%;">
+        </div>
+        <div class="hero-slide">
+          <img src="{{ 'ls-portrait-bw.jpg' | asset_url }}" alt="Bride with chapel veil" loading="lazy" style="object-position:50% 20%;">
+        </div>
+        <div class="hero-slide">
+          <img src="{{ 'ls-veil-back.jpg' | asset_url }}" alt="Bride with cathedral veil" loading="lazy" style="object-position:50% 25%;">
+        </div>
+      {%- endif -%}
+
+      <div class="hero-dots">
+        {%- assign slide_count = 4 -%}
+        {%- if section.settings.hero_image != blank -%}
+          {%- assign slide_count = 1 -%}
+          {%- if section.settings.hero_image_2 != blank -%}{%- assign slide_count = 2 -%}{%- endif -%}
+          {%- if section.settings.hero_image_3 != blank -%}{%- assign slide_count = 3 -%}{%- endif -%}
+        {%- endif -%}
+        {%- for i in (1..slide_count) -%}
+          <button class="hero-dot{% if forloop.first %} active{% endif %}" aria-label="Slide {{ forloop.index }}" type="button"></button>
+        {%- endfor -%}
+      </div>
+
+      <div class="hero__corner-card">
+        <div class="hero__corner-tag">Recent · The atelier</div>
+        <div class="hero__corner-title">Drafted to her gown · <em>finished by hand</em></div>
+        <div class="hero__corner-sub">European silk tulle with Chantilly lace edge.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Hero",
+  "tag": "div",
+  "settings": [
+    {
+      "type": "text",
+      "id": "headline",
+      "label": "Headline (first line)",
+      "default": "Your dream veil,"
+    },
+    {
+      "type": "text",
+      "id": "headline_italic",
+      "label": "Headline (italic line)",
+      "default": "made to order."
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body copy",
+      "default": "We believe in redefining elegance and tradition for the modern bride. Every veil and accessory is thoughtfully designed to complement your gown — and tell your individual story. Made by hand in our Brisbane studio."
+    },
+    { "type": "image_picker", "id": "hero_image",          "label": "Slide 1 — photograph" },
+    { "type": "text",         "id": "hero_image_focal",    "label": "Slide 1 — focal point (e.g. 60% 30%)", "default": "60% 30%" },
+    { "type": "image_picker", "id": "hero_image_2",        "label": "Slide 2 — photograph" },
+    { "type": "text",         "id": "hero_image_2_focal",  "label": "Slide 2 — focal point", "default": "50% 30%" },
+    { "type": "image_picker", "id": "hero_image_3",        "label": "Slide 3 — photograph" },
+    { "type": "text",         "id": "hero_image_3_focal",  "label": "Slide 3 — focal point", "default": "50% 30%" }
+  ],
+  "presets": [
+    { "name": "Hero" }
+  ]
+}
+{% endschema %}

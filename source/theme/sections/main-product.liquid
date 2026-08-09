@@ -1,0 +1,107 @@
+<section class="ls-section" style="padding-top:80px;">
+  <div class="ls-container">
+    <div class="product-grid">
+
+      {%- comment -%} Left — image gallery {%- endcomment -%}
+      <div class="product-gallery">
+        {%- for image in product.images -%}
+          <div class="ls-photo" style="border-radius:12px;border:1px solid var(--ls-border);aspect-ratio:3/4;">
+            <img
+              src="{{ image | image_url: width: 1200 }}"
+              srcset="{{ image | image_url: width: 600 }} 600w, {{ image | image_url: width: 1200 }} 1200w"
+              alt="{{ image.alt | default: product.title }}"
+              loading="{%- if forloop.first -%}eager{%- else -%}lazy{%- endif -%}"
+              style="object-position:{{ product.metafields.atelier.focal | default: '50% 40%' }};"
+            >
+            {%- if forloop.first -%}
+              <span class="ls-photo__eyebrow">{{ product.tags | first }}</span>
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+      </div>
+
+      {%- comment -%} Right — product info {%- endcomment -%}
+      <div class="product-info">
+        <div class="product-tag">{{ product.type }}</div>
+        <h1 class="product-title">{{ product.title }}</h1>
+
+        {%- if product.metafields.atelier.silhouette != blank -%}
+          <div style="font-size:14px;color:var(--ls-muted);">{{ product.metafields.atelier.silhouette }}</div>
+        {%- endif -%}
+
+        {%- if product.description != blank -%}
+          <div class="product-meta" style="font-size:16px;line-height:1.65;">
+            {{ product.description }}
+          </div>
+        {%- endif -%}
+
+        {%- if product.price > 0 -%}
+          <div style="font-family:var(--ls-font-display);font-size:28px;letter-spacing:-0.4px;color:var(--ls-charcoal);">
+            From {{ product.price | money }}
+          </div>
+        {%- else -%}
+          <div style="font-size:14px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ls-ink-60);font-weight:500;">
+            Made to order — enquire for pricing
+          </div>
+        {%- endif -%}
+
+        {%- form 'product', product -%}
+          <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+          {%- if product.variants.size > 1 -%}
+            {%- for option in product.options_with_values -%}
+              <div class="form-field">
+                <label class="form-label" for="Option-{{ option.name | handleize }}">{{ option.name }}</label>
+                <div style="position:relative;">
+                  <select class="form-select" id="Option-{{ option.name | handleize }}" name="options[{{ option.name }}]" style="padding-right:28px;">
+                    {%- for value in option.values -%}
+                      <option value="{{ value }}" {% if option.selected_value == value %}selected{% endif %}>{{ value }}</option>
+                    {%- endfor -%}
+                  </select>
+                  <span style="position:absolute;right:0;top:50%;transform:translateY(-50%);color:var(--ls-ink-60);pointer-events:none;">{%- render 'icon-chevron-down', size: 14 -%}</span>
+                </div>
+              </div>
+            {%- endfor -%}
+          {%- endif -%}
+
+          {%- if product.available -%}
+            <button type="submit" name="add" class="btn btn--primary btn--lg" style="width:100%;justify-content:center;">
+              {%- if product.price == 0 -%}
+                Enquire about this veil {%- render 'icon-arrow-right', size: 15 -%}
+              {%- else -%}
+                Add to bag — {{ product.selected_or_first_available_variant.price | money }} {%- render 'icon-arrow-right', size: 15 -%}
+              {%- endif -%}
+            </button>
+          {%- else -%}
+            <a href="/pages/contact#enquiry" class="btn btn--primary btn--lg" style="width:100%;justify-content:center;">
+              Enquire about this veil {%- render 'icon-arrow-right', size: 15 -%}
+            </a>
+          {%- endif -%}
+        {%- endform -%}
+
+        <div style="display:flex;flex-direction:column;gap:12px;padding:24px;background:var(--ls-cream-soft);border:1px solid var(--ls-border);border-radius:12px;">
+          {%- for item in "Drafted to your gown — no two are alike,European tulle hand-finished in Brisbane,Express worldwide shipping from 72hrs,No deposit until your design is approved" | split: "," -%}
+            <div style="display:flex;gap:10px;align-items:center;font-size:13.5px;color:var(--ls-ink-82);">
+              <span style="width:18px;height:18px;border-radius:9999px;border:1px solid var(--ls-border-strong);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
+                {%- render 'icon-check', size: 10 -%}
+              </span>
+              {{ item }}
+            </div>
+          {%- endfor -%}
+        </div>
+
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <a href="/pages/contact#enquiry" class="btn btn--ghost btn--md">Ask a question</a>
+          <a href="/pages/custom" class="btn btn--ghost btn--md">Custom options {%- render 'icon-arrow-right', size: 14 -%}</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product",
+  "tag": "div"
+}
+{% endschema %}

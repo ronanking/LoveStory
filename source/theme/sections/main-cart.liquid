@@ -1,0 +1,68 @@
+<section class="ls-section" style="padding-top:60px;padding-bottom:120px;">
+  <div class="ls-container" style="max-width:860px;">
+    <p class="ls-eyebrow" style="margin-bottom:24px;">Your bag</p>
+    <h1 style="font-family:var(--ls-font-display);font-size:clamp(28px,4vw,44px);font-weight:400;margin:0 0 48px;">{{ 'cart.general.title' | t }}</h1>
+
+    {%- if cart.item_count == 0 -%}
+      <div style="text-align:center;padding:80px 0;">
+        <p style="font-size:16px;color:var(--ls-ink-60);margin:0 0 32px;">{{ 'cart.general.empty' | t }}</p>
+        <a href="{{ routes.all_products_collection_url }}" class="btn btn--primary btn--md">
+          {{ 'cart.general.continue_browsing' | t }}
+        </a>
+      </div>
+    {%- else -%}
+      <form action="{{ routes.cart_url }}" method="post">
+        <div style="border-top:1px solid var(--ls-champagne);">
+          {%- for item in cart.items -%}
+            <div style="display:grid;grid-template-columns:80px 1fr auto;gap:20px;align-items:start;padding:24px 0;border-bottom:1px solid rgba(201,172,130,0.3);">
+              {%- if item.image -%}
+                <img src="{{ item.image | image_url: width: 160 }}" alt="{{ item.title | escape }}" width="80" height="80" style="width:80px;height:80px;object-fit:cover;border-radius:4px;">
+              {%- else -%}
+                <div style="width:80px;height:80px;background:var(--ls-champagne-soft);border-radius:4px;"></div>
+              {%- endif -%}
+              <div>
+                <p style="font-size:15px;font-weight:500;margin:0 0 4px;">{{ item.product.title }}</p>
+                {%- unless item.product.has_only_default_variant -%}
+                  <p style="font-size:13px;color:var(--ls-ink-60);margin:0 0 4px;">{{ item.variant.title }}</p>
+                {%- endunless -%}
+                <p style="font-size:14px;color:var(--ls-champagne);margin:0;">{{ item.price | money }}</p>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:12px;">
+                <p style="font-size:15px;font-weight:500;margin:0;">{{ item.line_price | money }}</p>
+                <div style="display:flex;align-items:center;gap:8px;border:1px solid var(--ls-champagne);border-radius:4px;padding:4px 10px;">
+                  <input
+                    type="number"
+                    name="updates[]"
+                    value="{{ item.quantity }}"
+                    min="0"
+                    style="width:36px;text-align:center;border:none;background:transparent;font-size:14px;color:var(--ls-charcoal);"
+                  >
+                </div>
+                <a href="{{ item.url_to_remove }}" style="font-size:12px;color:var(--ls-ink-40);text-decoration:underline;">Remove</a>
+              </div>
+            </div>
+          {%- endfor -%}
+        </div>
+
+        <div style="margin-top:40px;display:flex;flex-direction:column;align-items:flex-end;gap:20px;">
+          <div style="display:flex;justify-content:space-between;width:100%;max-width:320px;">
+            <span style="font-size:15px;color:var(--ls-ink-60);">{{ 'cart.general.subtotal' | t }}</span>
+            <span style="font-size:15px;font-weight:500;">{{ cart.total_price | money }}</span>
+          </div>
+          <p style="font-size:12px;color:var(--ls-ink-40);margin:0;text-align:right;">Taxes and shipping calculated at checkout</p>
+          <div style="display:flex;gap:12px;">
+            <button type="submit" name="update" class="btn btn--ghost btn--md">Update bag</button>
+            <button type="submit" name="checkout" class="btn btn--primary btn--md">{{ 'cart.general.checkout' | t }}</button>
+          </div>
+        </div>
+      </form>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Cart",
+  "tag": "div"
+}
+{% endschema %}

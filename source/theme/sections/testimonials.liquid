@@ -1,0 +1,42 @@
+<section class="ls-section testimonials-section">
+  <div class="ls-container">
+
+    <div style="text-align:center;margin-bottom:48px;">
+      <div class="ls-eyebrow">What our brides say</div>
+      <h2 style="font-family:var(--ls-font-display);font-size:clamp(30px,3.5vw,44px);font-weight:400;margin-top:12px;">Loved by <em>real brides</em></h2>
+    </div>
+
+    <div class="testimonials-img-wrap">
+      <img
+        src="{{ 'ls-reviews.png' | asset_url }}"
+        alt="Reviews from Sophie S., Emily M. and Alanna J. — Love Story Atelier brides"
+        loading="lazy"
+        width="1500"
+        style="width:100%;height:auto;display:block;">
+    </div>
+
+  </div>
+</section>
+
+<style>
+.testimonials-img-wrap {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+@media (max-width: 767px) {
+  .testimonials-img-wrap img {
+    width: 100%;
+  }
+}
+</style>
+
+{% schema %}
+{
+  "name": "Testimonials",
+  "tag": "div",
+  "settings": [],
+  "presets": [
+    { "name": "Testimonials" }
+  ]
+}
+{% endschema %}

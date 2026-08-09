@@ -1,0 +1,54 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "settings": {}
+    },
+    "value-marquee": {
+      "type": "value-marquee",
+      "settings": {}
+    },
+    "brand-intro": {
+      "type": "brand-intro",
+      "settings": {}
+    },
+    "categories": {
+      "type": "categories",
+      "blocks": {},
+      "settings": {}
+    },
+    "gallery": {
+      "type": "gallery",
+      "blocks": {},
+      "settings": {}
+    },
+    "process": {
+      "type": "process",
+      "settings": {}
+    },
+    "enquiry-form": {
+      "type": "enquiry-form",
+      "settings": {}
+    },
+    "social-feed": {
+      "type": "social-feed",
+      "blocks": {},
+      "settings": {}
+    },
+    "final-cta": {
+      "type": "final-cta",
+      "settings": {}
+    }
+  },
+  "order": [
+    "hero",
+    "value-marquee",
+    "brand-intro",
+    "categories",
+    "gallery",
+    "process",
+    "enquiry-form",
+    "social-feed",
+    "final-cta"
+  ]
+}

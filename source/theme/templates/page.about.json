@@ -1,0 +1,26 @@
+{
+  "sections": {
+    "page-header": {
+      "type": "page-header",
+      "settings": {
+        "eyebrow": "The atelier",
+        "title": "Handmade in Brisbane, with love.",
+        "body": "Meet Jesse — the heart and hands behind Love Story Atelier. Every veil is designed with intention, cut by hand, and finished in the studio she built from the ground up.",
+        "focal": "50% 30%"
+      }
+    },
+    "founder-note": {
+      "type": "founder-note",
+      "settings": {}
+    },
+    "atelier-values": {
+      "type": "atelier-values",
+      "settings": {}
+    },
+    "final-cta": {
+      "type": "final-cta",
+      "settings": {}
+    }
+  },
+  "order": ["page-header", "founder-note", "atelier-values", "final-cta"]
+}

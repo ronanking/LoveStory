@@ -1,0 +1,73 @@
+{%- if section.settings.photo != blank -%}
+  <div class="page-header page-header--photo">
+    <div class="photo-frame">
+      <img
+        src="{{ section.settings.photo | image_url: width: 1600 }}"
+        alt="{{ section.settings.photo.alt | default: page.title }}"
+        loading="eager"
+        style="width:100%;height:100%;object-fit:cover;object-position:{{ section.settings.focal | default: '50% 30%' }};"
+      >
+      <div class="page-header__overlay"></div>
+      <div class="page-header__content-over">
+        <div style="max-width:920px;text-shadow:0 1px 24px rgba(0,0,0,0.4);">
+          {%- if section.settings.eyebrow != blank -%}
+            <div class="ls-eyebrow ls-eyebrow--light">{{ section.settings.eyebrow }}</div>
+          {%- endif -%}
+          <h1 class="page-header__title" style="margin-top:16px;">{{ section.settings.title | default: page.title }}</h1>
+          {%- if section.settings.body != blank -%}
+            <p class="page-header__body" style="margin-top:20px;color:rgba(252,251,248,0.92);">{{ section.settings.body }}</p>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+{%- elsif request.page_type == 'collection' -%}
+  <div class="page-header page-header--photo">
+    <div class="photo-frame">
+      <img
+        src="{{ 'ls-bride-cathedral.jpg' | asset_url }}"
+        alt="The Veil Collection · Love Story Atelier"
+        loading="eager"
+        fetchpriority="high"
+        style="width:100%;height:100%;object-fit:cover;object-position:50% 25%;"
+      >
+      <div class="page-header__overlay"></div>
+      <div class="page-header__content-over">
+        <div style="max-width:920px;text-shadow:0 1px 24px rgba(0,0,0,0.4);">
+          <div class="ls-eyebrow ls-eyebrow--light">Bespoke bridal · Made to order in Brisbane</div>
+          <h1 class="page-header__title" style="margin-top:16px;">The Veil <em>Collection</em></h1>
+          <p class="page-header__body" style="margin-top:20px;color:rgba(252,251,248,0.92);">Each silhouette is a starting point — every piece is then drafted and finished by hand to your gown.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+{%- else -%}
+  <div class="page-header">
+    <div class="page-header__inner">
+      {%- if section.settings.eyebrow != blank -%}
+        <div class="ls-eyebrow">{{ section.settings.eyebrow }}</div>
+      {%- endif -%}
+      <h1 class="page-header__title">{{ section.settings.title | default: page.title }}</h1>
+      {%- if section.settings.body != blank -%}
+        <p class="page-header__body">{{ section.settings.body }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Page header",
+  "tag": "div",
+  "settings": [
+    { "type": "text",         "id": "eyebrow", "label": "Eyebrow text" },
+    { "type": "text",         "id": "title",   "label": "Title (overrides page title)" },
+    { "type": "textarea",     "id": "body",    "label": "Body copy" },
+    { "type": "image_picker", "id": "photo",   "label": "Background photo (optional)" },
+    { "type": "text",         "id": "focal",   "label": "Focal point (e.g. 50% 30%)", "default": "50% 30%" }
+  ],
+  "presets": [
+    { "name": "Page header" }
+  ]
+}
+{% endschema %}

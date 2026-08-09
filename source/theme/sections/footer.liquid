@@ -1,0 +1,139 @@
+<footer class="site-footer">
+  <div class="ls-container">
+
+    {%- comment -%} Newsletter {%- endcomment -%}
+    <div class="footer-news">
+      <div>
+        <div class="ls-eyebrow">The letter</div>
+        <h3 class="footer-news__title" style="margin-top:12px;">
+          Quiet notes from the studio, <em>once a month</em>.
+        </h3>
+        <p class="footer-news__body">
+          Studio news, new pieces, and the occasional behind-the-scenes morning. One letter a month.
+        </p>
+      </div>
+      {%- form 'customer', id: 'FooterNewsletterForm' -%}
+        <input type="hidden" name="contact[tags]" value="newsletter">
+        <div class="footer-news__form">
+          <input
+            type="email"
+            name="contact[email]"
+            class="footer-news__input"
+            placeholder="your email"
+            aria-label="Email address"
+            required
+          >
+          <button type="submit" class="footer-news__submit">
+            Subscribe {%- render 'icon-arrow-right', size: 14 -%}
+          </button>
+        </div>
+      {%- endform -%}
+    </div>
+
+    {%- comment -%} Link columns {%- endcomment -%}
+    <div class="footer-grid">
+
+      {%- comment -%} Brand col {%- endcomment -%}
+      <div class="footer-brand">
+        <div>
+          <a href="{{ routes.root_url }}" class="footer-brand__name">Love<em>story</em></a>
+          <div class="footer-brand__sub">Atelier · Brisbane</div>
+        </div>
+        <p class="footer-brand__body">
+          Bespoke bridal veils, accessories, and embroidered keepsakes — thoughtfully handmade
+          to celebrate your unique love story. Made-to-order in Brisbane, shipped worldwide.
+        </p>
+        <div class="footer-brand__socials">
+          <a href="{{ section.settings.instagram_url }}" class="social-btn" aria-label="Instagram" target="_blank" rel="noopener">
+            {%- render 'icon-instagram', size: 15 -%}
+          </a>
+          <a href="{{ section.settings.tiktok_url }}" class="social-btn" aria-label="TikTok" target="_blank" rel="noopener">
+            {%- render 'icon-tiktok', size: 15 -%}
+          </a>
+          <a href="{{ section.settings.pinterest_url }}" class="social-btn" aria-label="Pinterest" target="_blank" rel="noopener">
+            {%- render 'icon-pinterest', size: 15 -%}
+          </a>
+        </div>
+        <div class="footer-brand__email">{{ section.settings.email }}</div>
+      </div>
+
+      {%- comment -%} Shop column {%- endcomment -%}
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul role="list">
+          <li><a href="{{ routes.collections_url }}/veils">All veils</a></li>
+          <li><a href="{{ routes.collections_url }}/veils?filter.p.tag=Cathedral">Cathedral</a></li>
+          <li><a href="{{ routes.collections_url }}/veils?filter.p.tag=Mantilla">Mantilla</a></li>
+          <li><a href="{{ routes.collections_url }}/veils?filter.p.tag=Accessories">Pearl earrings</a></li>
+          <li><a href="{{ routes.collections_url }}/veils?filter.p.tag=Accessories">Accessories</a></li>
+        </ul>
+      </div>
+
+      {%- comment -%} Custom column {%- endcomment -%}
+      <div class="footer-col">
+        <h4>Custom</h4>
+        <ul role="list">
+          <li><a href="{{ pages['custom'].url | default: '/pages/custom' }}">The bespoke process</a></li>
+          <li><a href="{{ pages['custom'].url | default: '/pages/custom' }}">Embroidery</a></li>
+          <li><a href="{{ pages['custom'].url | default: '/pages/custom' }}">Keepsakes</a></li>
+          <li><a href="{{ pages['contact'].url | default: '/pages/contact' }}">Studio enquiry</a></li>
+        </ul>
+      </div>
+
+      {%- comment -%} Atelier column {%- endcomment -%}
+      <div class="footer-col">
+        <h4>Atelier</h4>
+        <ul role="list">
+          <li><a href="{{ pages['about'].url | default: '/pages/about' }}">About</a></li>
+          <li><a href="{{ pages['contact'].url | default: '/pages/contact' }}">Contact</a></li>
+          <li><a href="{{ pages['shipping-returns'].url | default: '/policies/shipping-policy' }}">Shipping &amp; Returns</a></li>
+          <li><a href="{{ pages['faq'].url | default: '/pages/faq' }}">Care &amp; FAQ</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    {%- comment -%} Fine print {%- endcomment -%}
+    <div class="footer-fine">
+      <span>&copy; {{ shop.name }} {{ 'now' | date: '%Y' }} &middot; All rights reserved</span>
+      <div class="footer-fine__links">
+        <a href="{{ shop.privacy_policy.url }}">Privacy</a>
+        <a href="{{ shop.terms_of_service.url }}">Terms</a>
+        <span>
+          Currency
+          <span class="currency-chip">{{ localization.currency.iso_code }} &#8964;</span>
+        </span>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    {
+      "type": "text",
+      "id": "email",
+      "label": "Contact email",
+      "default": "info@lovestoryatelier.com"
+    },
+    {
+      "type": "url",
+      "id": "instagram_url",
+      "label": "Instagram URL"
+    },
+    {
+      "type": "url",
+      "id": "tiktok_url",
+      "label": "TikTok URL"
+    },
+    {
+      "type": "url",
+      "id": "pinterest_url",
+      "label": "Pinterest URL"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,85 @@
+<section class="ls-section" id="atelier" data-reveal>
+  <div class="ls-container">
+    <div class="brand-grid">
+
+      {%- comment -%} Copy {%- endcomment -%}
+      <div class="brand-copy">
+        <div class="ls-eyebrow">The atelier</div>
+        <h2 class="brand-copy__title">
+          {{ section.settings.title | default: 'Thoughtfully made' }}
+          <em>{{ section.settings.title_italic | default: 'heirloom pieces' }}</em>
+          {{ section.settings.title_end | default: 'for the modern bride.' }}
+        </h2>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <p class="brand-copy__body">
+            {{ section.settings.body_1 | default: "Hello — I'm Jesse, the heart and hands behind Love Story Atelier. With a background in fashion and design, I discovered a deep passion for the bridal world, and after years of refining my craft, I now focus fully on creating meaningful, heirloom-quality pieces for modern brides." }}
+          </p>
+          <p class="brand-copy__body">
+            {{ section.settings.body_2 | default: 'From selecting luxurious fabrics and exquisite embellishments to incorporating meaningful details like custom embroidery — every veil and accessory is thoughtfully designed to complement your gown and tell your individual story.' }}
+          </p>
+        </div>
+        <div style="display:flex;gap:18px;align-items:center;margin-top:12px;flex-wrap:wrap;">
+          <a href="{{ pages['about'].url | default: '/pages/about' }}" class="btn btn--ghost">
+            Meet the atelier {%- render 'icon-arrow-up-right', size: 14 -%}
+          </a>
+          <a href="{{ pages['custom'].url | default: '/pages/custom' }}" style="font-size:14px;color:var(--ls-charcoal);text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--ls-ink-40);">
+            The bespoke process
+          </a>
+        </div>
+      </div>
+
+      {%- comment -%} Image stack {%- endcomment -%}
+      <div class="brand-imgs">
+        <div class="ls-photo brand-imgs__tall" style="border-radius:12px;border:1px solid var(--ls-border);aspect-ratio:4/5;">
+          {%- if section.settings.image_1 != blank -%}
+            <img src="{{ section.settings.image_1 | image_url: width: 800 }}" alt="{{ section.settings.image_1.alt | default: 'In the studio' }}" loading="lazy">
+          {%- else -%}
+            <img src="{{ 'ls-studio.jpg' | asset_url }}" alt="In the studio" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 30%;">
+          {%- endif -%}
+          <span class="ls-photo__eyebrow">In the studio</span>
+        </div>
+        <div class="ls-photo" style="border-radius:12px;border:1px solid var(--ls-border);aspect-ratio:1/1;">
+          {%- if section.settings.image_2 != blank -%}
+            <img src="{{ section.settings.image_2 | image_url: width: 600 }}" alt="{{ section.settings.image_2.alt | default: 'Custom embroidery' }}" loading="lazy">
+          {%- else -%}
+            <img src="{{ 'ls-portrait-bw.jpg' | asset_url }}" alt="Bride with chapel veil" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 20%;">
+          {%- endif -%}
+          <span class="ls-photo__eyebrow">Custom embroidery</span>
+        </div>
+        <div class="ls-photo" style="border-radius:12px;border:1px solid var(--ls-border);aspect-ratio:1/1;">
+          {%- if section.settings.image_3 != blank -%}
+            <img src="{{ section.settings.image_3 | image_url: width: 600 }}" alt="{{ section.settings.image_3.alt | default: 'Hand-finished hem' }}" loading="lazy">
+          {%- else -%}
+            <img src="{{ 'ls-veil-back.jpg' | asset_url }}" alt="Bride cathedral veil from behind" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 25%;">
+          {%- endif -%}
+          <span class="ls-photo__eyebrow">Hand-finished hem</span>
+        </div>
+        <div class="brand-note">
+          <div class="brand-note__quote">"It's an honour to play a small part in your big moment."</div>
+          <div class="brand-note__sig">Jesse · Founder</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Brand intro",
+  "tag": "div",
+  "settings": [
+    { "type": "text",     "id": "title",         "label": "Title start",         "default": "Thoughtfully made" },
+    { "type": "text",     "id": "title_italic",   "label": "Title italic",        "default": "heirloom pieces" },
+    { "type": "text",     "id": "title_end",      "label": "Title end",           "default": "for the modern bride." },
+    { "type": "textarea", "id": "body_1",         "label": "Body paragraph 1",    "default": "Hello — I'm Jesse, the heart and hands behind Love Story Atelier." },
+    { "type": "textarea", "id": "body_2",         "label": "Body paragraph 2",    "default": "From selecting luxurious fabrics to incorporating meaningful embroidery details — every piece tells your individual story." },
+    { "type": "image_picker", "id": "image_1",   "label": "Studio image (tall)" },
+    { "type": "image_picker", "id": "image_2",   "label": "Studio image (square 1)" },
+    { "type": "image_picker", "id": "image_3",   "label": "Studio image (square 2)" }
+  ],
+  "presets": [
+    { "name": "Brand intro" }
+  ]
+}
+{% endschema %}

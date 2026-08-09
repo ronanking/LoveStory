@@ -1,0 +1,44 @@
+<section class="final-cta" data-reveal>
+  <div class="final-cta__inner">
+    <div class="final-cta__parallax">
+      {%- if section.settings.image != blank -%}
+        <img src="{{ section.settings.image | image_url: width: 1600 }}" alt="{{ section.settings.image.alt | default: 'Begin your custom veil' }}" loading="lazy" style="object-position:{{ section.settings.focal | default: '50% 30%' }};">
+      {%- else -%}
+        <img src="{{ 'ls-church-veil.jpg' | asset_url }}" alt="Begin your custom veil" loading="lazy" style="object-position:50% 30%;">
+      {%- endif -%}
+    </div>
+    <div class="final-cta__overlay"></div>
+    <div class="final-cta__content">
+      <div class="ls-eyebrow ls-eyebrow--light">Begin your custom veil</div>
+      <h2 class="final-cta__title">
+        Let us create the veil <em>you'll remember forever</em>.
+      </h2>
+      <p class="final-cta__body">
+        One veil, designed only for you, finished by hand in our Brisbane studio. We'd love to hear about your day.
+      </p>
+      <div class="final-cta__btns">
+        <a href="/pages/contact#enquiry" class="btn btn--cream btn--lg">
+          Start your enquiry {%- render 'icon-arrow-right', size: 15 -%}
+        </a>
+        <a href="{{ pages['about'].url | default: '/pages/about' }}" class="btn btn--on-dark btn--lg">
+          Meet the atelier
+        </a>
+      </div>
+      <div class="final-cta__sub">Brisbane · Made to order · Worldwide express</div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Final CTA",
+  "tag": "div",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Background photograph" },
+    { "type": "text",         "id": "focal", "label": "Focal point (e.g. 55% 25%)", "default": "55% 25%" }
+  ],
+  "presets": [
+    { "name": "Final CTA" }
+  ]
+}
+{% endschema %}

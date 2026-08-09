@@ -1,0 +1,30 @@
+{
+  "sections": {
+    "page-header": {
+      "type": "page-header",
+      "settings": {
+        "eyebrow": "Bespoke design",
+        "title": "Custom-made veils, designed around your gown.",
+        "body": "Our bespoke design service offers a personalised experience for the bride seeking intentional, one-of-a-kind pieces crafted with meaning and care.",
+        "focal": "55% 30%"
+      }
+    },
+    "embroidery-showcase": {
+      "type": "embroidery-showcase",
+      "settings": {}
+    },
+    "process": {
+      "type": "process",
+      "settings": {}
+    },
+    "enquiry-form": {
+      "type": "enquiry-form",
+      "settings": {}
+    },
+    "final-cta": {
+      "type": "final-cta",
+      "settings": {}
+    }
+  },
+  "order": ["page-header", "embroidery-showcase", "process", "enquiry-form", "final-cta"]
+}

@@ -1,0 +1,68 @@
+<section class="ls-section" data-reveal>
+  <div class="ls-container">
+    <div style="margin-bottom:56px;max-width:720px;">
+      <div class="ls-eyebrow">The signature</div>
+      <h2 class="ls-section-title" style="margin-top:14px;font-size:clamp(36px,4.6vw,60px);letter-spacing:-1.4px;">
+        <em>Hand embroidery</em> — initials, dates, a line that means something.
+      </h2>
+      <p style="font-size:16.5px;color:var(--ls-ink-82);margin-top:16px;line-height:1.6;">
+        Custom embroidery is the most-loved part of the atelier. Your initials, your wedding date, a single word — stitched along a hem, into a corner, hidden where only you'll know.
+      </p>
+    </div>
+
+    <div class="embroidery-grid">
+      <div class="ls-photo" style="border-radius:12px;border:1px solid var(--ls-border);aspect-ratio:4/5;">
+        {%- if section.settings.image_main != blank -%}
+          <img src="{{ section.settings.image_main | image_url: width: 1000 }}" alt="Hand-embroidered initials and wedding date on tulle" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 55%;">
+        {%- else -%}
+          <img src="{{ 'ls-lace-closeup.jpg' | asset_url }}" alt="Chantilly lace edge veil detail closeup" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 35%;">
+        {%- endif -%}
+        <span class="ls-photo__eyebrow">Initials · date</span>
+      </div>
+      <div class="embroidery-right">
+        <div class="ls-photo" style="border-radius:12px;border:1px solid var(--ls-border);">
+          {%- if section.settings.image_2 != blank -%}
+            <img src="{{ section.settings.image_2 | image_url: width: 700 }}" alt="Hands stitching lace appliques onto a veil" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 40%;">
+          {%- else -%}
+            <img src="{{ 'ls-studio.jpg' | asset_url }}" alt="Hands stitching lace appliques onto a veil" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 30%;">
+          {%- endif -%}
+          <span class="ls-photo__eyebrow">By hand · in studio</span>
+        </div>
+        <div class="ls-photo" style="border-radius:12px;border:1px solid var(--ls-border);">
+          {%- if section.settings.image_3 != blank -%}
+            <img src="{{ section.settings.image_3 | image_url: width: 700 }}" alt="Lace appliques along a veil edge" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 50%;">
+          {%- else -%}
+            <img src="{{ 'ls-mirror.jpg' | asset_url }}" alt="Lace appliques along a veil edge" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:50% 20%;">
+          {%- endif -%}
+          <span class="ls-photo__eyebrow">Lace appliqués</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="embroidery-chips">
+      <span class="embroidery-chip-label">We embroider</span>
+      <span class="embroidery-chip">Initials</span>
+      <span class="embroidery-chip">Wedding date</span>
+      <span class="embroidery-chip">A vow line</span>
+      <span class="embroidery-chip">A song lyric</span>
+      <span class="embroidery-chip">A name in cursive</span>
+      <span class="embroidery-chip">A pattern drawn from scratch</span>
+      <span class="embroidery-chip">A short message</span>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Embroidery showcase",
+  "tag": "div",
+  "settings": [
+    { "type": "image_picker", "id": "image_main", "label": "Main photo (tall)" },
+    { "type": "image_picker", "id": "image_2",    "label": "Studio photo" },
+    { "type": "image_picker", "id": "image_3",    "label": "Detail photo" }
+  ],
+  "presets": [
+    { "name": "Embroidery showcase" }
+  ]
+}
+{% endschema %}

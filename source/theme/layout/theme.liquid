@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>
+    {%- if page_title == blank -%}
+      {{ shop.name }}
+    {%- else -%}
+      {{ page_title }} — {{ shop.name }}
+    {%- endif -%}
+  </title>
+  {%- if page_description -%}
+    <meta name="description" content="{{ page_description | escape }}">
+  {%- endif -%}
+
+  {%- comment -%} Canonical URL {%- endcomment -%}
+  <link rel="canonical" href="{{ canonical_url }}">
+
+  {%- comment -%} Fonts {%- endcomment -%}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Great+Vibes&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  {%- comment -%} Theme CSS {%- endcomment -%}
+  {{ 'base.css' | asset_url | stylesheet_tag }}
+  {{ 'ls-animations.css' | asset_url | stylesheet_tag }}
+
+  {%- comment -%} Shopify required head content {%- endcomment -%}
+  {{ content_for_header }}
+</head>
+<body>
+
+  {%- section 'header' -%}
+
+  <main id="MainContent" role="main" tabindex="-1">
+    {{ content_for_layout }}
+  </main>
+
+  {%- section 'footer' -%}
+
+  {{ 'main.js' | asset_url | script_tag }}
+  {{ 'ls-animations.js' | asset_url | script_tag }}
+</body>
+</html>

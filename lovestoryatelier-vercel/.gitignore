@@ -32,3 +32,7 @@ public/posters/*.png
 
 # TypeScript incremental build cache
 *.tsbuildinfo
+
+# Source material — 77 MB, preserved on the `source-assets` branch.
+# Repopulate with: git checkout origin/source-assets -- source
+reference/

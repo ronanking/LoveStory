@@ -1,176 +1,141 @@
 # Source audit
 
-**Date:** 2026-08-07
-**Status:** ⛔ Blocked — neither source archive is present in this environment.
+**Status:** ✅ Source material received and extracted.
 
-This document is the audit the brief asked for. It cannot yet contain the page
-map, content migration matrix, image inventory or interaction inventory,
-because the inputs those are derived from do not exist on this machine. What it
-records instead is exactly what was searched, what was found, and what is
-needed to proceed.
+Delivered on the `source-assets` branch of `ronanking/LoveStory` (commit
+`a2c5df1`) after chat attachments and the live site both proved unreachable —
+see [Delivery history](#delivery-history) for why that mattered.
 
-## Root cause: the build does not run on the author's PC
-
-The source folders were supplied as Windows paths:
-
-```
-C:\Users\Ronan\Downloads\lovestoryatelier-animated
-C:\Users\Ronan\Downloads\drive-download-20260807T022108Z-1-001
+```bash
+git checkout origin/source-assets -- source   # repopulates reference/
 ```
 
-This session does **not** execute on that machine. It runs in an ephemeral
-Linux container in Anthropic's cloud (Claude Code remote execution), created
-fresh from a `git clone` at session start:
+`reference/` is gitignored (77 MB); the branch is the canonical copy.
 
-```
-container: container_01WKfVmtncNmSn8vDkuHKcgU--claude_code_remote--05d03d
-kernel:    Linux 6.18.5-fc-v18   /   4 cores, 15 GB RAM
-```
+## What arrived
 
-There is no shared filesystem, no drive mapping and no remote-desktop bridge to
-`C:\`. The same applies to applications: Blender being open on the author's PC
-has no bearing here, which is why Blender had to be installed inside the
-container before any of the 3D work could run.
-
-Files reach this container by exactly two mechanisms: the git clone performed
-at startup, and network fetches that survive the egress policy. Chat
-attachments do not land on its disk — which is why several rounds of supplying
-the material produced nothing on the filesystem.
-
-**Therefore: committing the folders to a branch of `ronanking/LoveStory` is the
-delivery route, and it is the only one.**
-
-## What was expected
-
-| Archive | Contents per brief | Found |
+| | Files | Size |
 |---|---|---|
-| `lovestoryatelier-animated.zip` | Shopify Liquid theme + current web assets | ❌ No |
-| `drive-download-20260807T022108Z-1-001.zip` | Bridal image library (JPG/PNG/JPEG/CR3) | ❌ No |
+| `reference/theme/` — Shopify Liquid theme | 80 | 4.9 MB |
+| `reference/images/` — photography library | 25 | 72 MB |
 
-## What was searched
+`.CR3` RAW files were excluded from the push deliberately: they are large, and
+nothing in this pipeline can read them without extra tooling. The JPG/PNG/JPEG
+set is what the build needs.
 
-Working directory, git history, whole filesystem, upload mounts, connected
-services:
+## Theme inventory
 
 ```
-find / -iname "*lovestoryatelier*" -o -iname "drive-download-*"   → 0 results
-find / -iname "*.liquid"                                          → 0 results
-find / -iname "*.cr3"                                             → 0 results
-find / \( -iname "*veil*" -o -iname "*bridal*" -o -iname "*atelier*" \)
-                              → 0 results (only Go stdlib "unveil_openbsd.go")
-find /home /mnt /media /srv /data -iname "*.zip"                  → 0 results
-git log --all --pretty=format: --name-only | grep -iE "liquid|veil|bridal"
-                                                                  → 0 results
-ls /mnt/attach  /opt/rclone-attach                                → both empty
+layout/theme.liquid          config/settings_data.json, settings_schema.json
+templates/  17 files         .json section configs + .liquid fallbacks
+sections/   20 files         2,324 lines of Liquid
+snippets/   10 files         icon partials
+assets/     base.css (1,082), ls-animations.css, ls-animations.js (352), main.js
+            + 19 brand photographs (ls-*.jpg / .png)
 ```
 
-## What the repository actually contains
+The `.json` templates only carry section ordering. **All real copy lives as
+`default:` values inside the section `.liquid` files**, which means the theme
+carries its content even with an empty Shopify store — and means the migration
+source is the Liquid, not the store.
 
-`ronanking/LoveStory`, cloned fresh at session start, holds an **unrelated
-project**: *MacroMatch AU*, an Australian calorie and macro tracker.
+## Page and section map
 
-- `src/` — Vite + React app (`TodayView`, `EatSheet`, `SetupWizard`, `LearnView`, `ProfileView`)
-- `ingest/` — Python food-data ingestion pipeline with 21 tests
-- `supabase/` — `schema_app.sql`, `schema_ingest.sql`
-- `docs/HANDOFF.md`, `docs/SOURCES_REPORT.md`
-- Full history is 2 commits, neither containing bridal or Liquid assets
-
-There is no Love Story Atelier code or photography in this repository at any
-point in its history. The repository name is the only connection.
-
-## Connected services
-
-| Service | State |
-|---|---|
-| Shopify | Was connected to **NaviGuard** (`naviguard.store`), not Love Story Atelier. Switched away on request toward a store named "pratice"; the connector now requires re-authorisation, which cannot be completed from a non-interactive session. Not to be used per instruction. |
-| GitHub | Scoped to `ronanking/lovestory`. `list_repos` shows only `ronanking/LoveStory` and `ronanking/Tradieconnect`. |
-
-## Network egress — why the live site could not be read
-
-Reading <https://lovestoryatelier.com/> was authorised, but both available
-routes are blocked, for two different reasons.
-
-**Container egress is restricted by organisation policy.** The agent proxy
-answered `403` to `CONNECT` and logged the denial:
-
-```json
-{ "kind": "connect_rejected",
-  "detail": "gateway answered 403 to CONNECT (policy denial or upstream failure)",
-  "host": "lovestoryatelier.com:443" }
-```
-
-Reachability test across the hosts that would matter:
-
-| Host | Result |
-|---|---|
-| `lovestoryatelier.com` | ❌ denied |
-| `cdn.shopify.com` | ❌ denied — so even with image URLs, assets could not be pulled |
-| `www.etsy.com` | ❌ denied |
-| `raw.githubusercontent.com` | ✅ reachable |
-
-The proxy README is explicit that policy denials must be reported rather than
-retried or routed around, so no workaround was attempted.
-
-**WebFetch (a separate, Anthropic-side route) returns `403` from the site
-itself** — Shopify bot protection rejecting a non-browser client. Tried and
-refused: `/`, `www.` variant, `/collections/veils`, `/products.json?limit=250`.
-
-**Consequence:** GitHub is the only reachable route into this container.
-Committing the source material to a branch of `ronanking/LoveStory` is
-therefore the one delivery method guaranteed to work.
-
-Public search results do confirm the business (Brisbane studio, European tulle,
-custom embroidery and monograms, cathedral/fingertip veils,
-`info@lovestoryatelier.com`), but search snippets are not a substitute for the
-theme source or the photography library, and are not used as content here.
-
-## Build toolchain available
-
-| Tool | Version | Notes |
+| Route (Shopify) | Sections | → New route |
 |---|---|---|
-| Node | 22.22.2 | ✅ |
-| pnpm | 10.33.0 | ✅ |
-| npm | 10.9.7 | ✅ |
-| Python | 3.11.15 | ✅ |
-| Blender | — | ❌ Not installed. See `blender/README.md` for the locations searched. |
-| ImageMagick / exiftool / dcraw | — | ❌ Not installed; needed for the RAW/derivative pipeline. |
+| `/` (`index.json`) | hero, value-marquee, brand-intro, categories, gallery, testimonials, process, enquiry-form, social-feed, final-cta | `/` |
+| `/collections/veils` | main-collection | `/collection` |
+| `/products/:handle` | main-product | `/collection/[slug]` |
+| `/pages/custom` | page-header, embroidery-showcase, process, enquiry-form | `/custom` |
+| `/pages/about` | page-header, founder-note, atelier-values, final-cta | `/about` |
+| `/pages/contact` | page-header, contact-info, enquiry-form, faq | `/contact` |
+| `/cart`, `/404`, `password` | main-cart, main-404 | dropped / `not-found` |
 
-## Why the build did not proceed on assumptions
+`main-cart` is intentionally **not** migrated: this build is enquiry-led, not
+transactional, so there is no cart to render.
 
-The brief's own acceptance criteria make substituted content a failure rather
-than a shortcut:
+## Content recovered
 
-- "the source brand copy and photography are visibly represented"
-- "Do not use AI-generated replacement brides or stock imagery. The supplied
-  photography is the brand asset."
-- "Do not invent prices when the source files do not provide trustworthy prices"
-- "Do not invent awards, review counts, pricing, shipping claims, turnaround
-  times or business facts beyond what the source files already state."
-- "Do not create a generic wedding template."
+Confirmed brand facts, all sourced from the theme — none invented:
 
-Proceeding without the archives would mean inventing copy, prices and
-turnaround times for a real trading business, and shipping a template with no
-photography — the specific outcome the brief rules out. So content-dependent
-work is deferred rather than guessed at.
+- **Founder: Jesse.** *"Hello — I'm Jesse, the heart and hands behind Love Story
+  Atelier."* Signature quote: *"It's an honour to play a small part in your big
+  moment."*
+- **Made by hand in a Brisbane studio**, from **European tulle**.
+- Hero: *"Your dream veil, **made to order**."*
+- Contact: **info@lovestoryatelier.com**
+- Trust strip: **72 hrs** studio dispatch · **European** tulle · **Worldwide**
+  shipping, complimentary over **$300 AUD**.
 
-## What was built anyway
+These last three are business claims. They are carried across **verbatim** and
+must not be paraphrased or "improved" — they are the client's commitments.
 
-Work that is fully specified by the brief and genuinely independent of the
-archives:
+### Veil catalogue
 
-- `blender/scripts/veil_study.py` — the complete silk-tulle veil pipeline
-- `blender/README.md` — install, canonical command, parameters, integration
+12 veils in the collection fallback, each with name, silhouette, length, edge
+and image. Silhouettes: Cathedral (280–320 cm), Mantilla (200–240 cm), Chapel
+(160–180 cm), Fingertip (100–110 cm), Two-tier (180 cm).
 
-## To unblock
+**No prices anywhere — every card reads "Made to order."** The template only
+shows a price when a real Shopify product carries one. Nothing here justifies
+inventing a price, and none will be.
 
-Any one of these is sufficient for the photography and copy:
+Filter taxonomy: All silhouettes · Cathedral · Chapel · Fingertip · Mantilla ·
+Two-tier · Lace · Plain.
 
-1. **Re-attach both archives** to the session — the only route that supplies
-   the Liquid theme, the existing animation layer, *and* the CR3 originals.
-   Note that attachments have not been reaching this container's filesystem;
-   if re-attaching fails again, committing the archives to a branch of
-   `ronanking/LoveStory` and telling me the branch name works reliably.
-2. **Re-authorise the Shopify connector** and select the "pratice" store.
-   Supplies products, copy and web-resolution imagery — but not the Liquid
-   source, not the animation code, and not the RAW originals.
-3. **Supply the live site URL** — recovers copy, structure and palette only.
+### Silhouette guide
+
+Five lengths with full editorial descriptions and a proportional length bar:
+Blusher ~80 cm · Fingertip ~110 cm · Chapel ~170 cm · Mantilla ~210 cm ·
+Cathedral ~320 cm.
+
+### Four categories
+
+Custom Veils · Pearl Earrings · Bridal Accessories · Embroidered Keepsakes.
+
+## Interactions to preserve
+
+From `ls-animations.js` (352 lines) and the section markup:
+
+| Interaction | Verdict |
+|---|---|
+| Hero crossfade + Ken Burns, dot navigation | Keep, add reduced-motion path |
+| Staggered `data-reveal` system | Keep as a motion primitive |
+| Final-CTA parallax | Keep, throttled |
+| Custom desktop cursor | Keep, fine-pointer only |
+| Collection quick view | Rebuild with focus trap + Escape |
+| Silhouette carousel | Rebuild with keyboard + swipe |
+| Gallery filtering | Rebuild, preserving layout stability |
+| Mobile social marquee | Keep, pause on reduced motion |
+| Announcement rotation | Keep |
+
+## Weak points the rebuild fixes
+
+1. **Copy is trapped in Liquid `default:` filters** — unreachable to anyone who
+   is not editing theme files. Moves to typed content modules.
+2. **Inline styles everywhere** (`style="aspect-ratio:3/4;..."` on nearly every
+   element) — unmaintainable and unthemeable. Moves to CSS Modules on tokens.
+3. **Filter chips have `aria-pressed` but the panels are not linked**, and the
+   carousel has no keyboard path.
+4. **Focal points are hardcoded** per usage (`object-position:50% 20%`) and
+   repeated. Becomes typed image metadata, defined once.
+5. **No art-directed mobile crops** — the same crop is served at every width.
+6. **Duplicate markup**: the 12 collection cards are hand-written, not looped.
+7. Shopify coupling to remove: `/collections/veils`, `/pages/custom`,
+   `routes.*`, `money` filters, `asset_url`, metafields.
+
+## Delivery history
+
+Recorded because it cost several rounds and would otherwise repeat.
+
+The build runs in an **ephemeral Linux container in Anthropic's cloud**, not on
+the author's PC. `C:\Users\Ronan\Downloads\...` is not reachable; `ls /mnt/c`
+returns nothing. Chat attachments do not land on the container's disk.
+
+The live site was equally unreachable, by two independent blocks: organisation
+egress policy denied `lovestoryatelier.com`, `cdn.shopify.com` and
+`www.etsy.com` at `CONNECT` (403), while WebFetch — a separate route — was
+refused 403 by Shopify's bot protection.
+
+**GitHub is the only reachable route into this container**, which is why the
+`source-assets` branch worked when nothing else did.

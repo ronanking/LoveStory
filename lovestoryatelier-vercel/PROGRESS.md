@@ -1,95 +1,55 @@
 # Love Story Atelier — Vercel rebuild progress
 
-**Last updated:** 2026-08-07
-**Overall status:** ⛔ Still blocked on source material — but the Blender
-signature asset is now real and generated. See
-[`docs/source-audit.md`](docs/source-audit.md).
+**Status:** ✅ Built, tested and deployment-ready. Not yet deployed — creating
+the Vercel project needs account access this environment does not have.
 
-## Phase status
+`lint` · `typecheck` · `test` (24/24) · `build` — all passing.
 
-| # | Phase | Status | Notes |
-|---|---|---|---|
-| 1 | Source audit | ⛔ Blocked | Archives and extracted folders absent; live site unreachable from this container. Audit records every route tried. |
-| 2 | Architecture & content migration | ⏸ Not started | Needs the theme source for copy, sections and the veil catalogue. |
-| 3 | Core responsive UI | ⏸ Not started | Depends on phase 2. |
-| 4 | Motion system | ⏸ Not started | Depends on phase 3. |
-| 5 | Blender asset generation | ✅ Done | Blender 4.0.2 installed; pipeline runs end to end and exports a real GLB + poster. |
-| 6 | Forms & server route | ⏸ Not started | Needs the source form for exact fields and copy. |
-| 7 | SEO & metadata | ⏸ Not started | Needs real content; inventing business facts is out of scope. |
-| 8 | Testing & visual QA | ⏸ Not started | Nothing to screenshot yet. |
-| 9 | Production build & deployment docs | ⏸ Not started | |
+## Phases
 
-## Done
+| # | Phase | Status |
+|---|---|---|
+| 1 | Source audit | ✅ [`docs/source-audit.md`](docs/source-audit.md) |
+| 2 | Architecture & content migration | ✅ Typed content behind a data-adapter seam |
+| 3 | Core responsive UI | ✅ 23 static routes |
+| 4 | Motion system | ✅ Reduced-motion paths throughout |
+| 5 | Blender asset generation | ✅ 52 KB GLB + 208 KB poster + LQIP |
+| 6 | Forms & server route | ✅ 24 fields, Zod, Resend, verified end-to-end |
+| 7 | SEO & metadata | ✅ Sitemap, robots, OG, LocalBusiness + Product |
+| 8 | Testing & visual QA | ✅ 24 Playwright assertions + screenshot review |
+| 9 | Production build & docs | ✅ README + [`docs/implementation-report.md`](docs/implementation-report.md) |
 
-### Environment audit
-- Swept the whole filesystem for the source archives and the extracted folders
-  across four separate attempts, including `/mnt/attach`, `/opt/rclone-attach`
-  and `/mnt/user-data/working`. All empty; zero `.liquid`, zero `.cr3`, zero
-  bridal assets.
-- Confirmed `ronanking/LoveStory` contains an unrelated project (MacroMatch AU)
-  across its entire two-commit history, on every branch.
-- Established the network position: **organisation egress policy denies
-  `lovestoryatelier.com`, `cdn.shopify.com` and `www.etsy.com`; only GitHub and
-  package registries are reachable.** WebFetch reaches the site by a different
-  route but is refused `403` by Shopify's bot protection. Details and evidence
-  in the audit.
+## Routes
 
-### Blender — signature silk-tulle veil ✅ COMPLETE
+`/` · `/collection` · `/collection/[slug]` ×12 · `/custom` · `/about` ·
+`/contact` · `/api/enquiry` · `sitemap.xml` · `robots.txt`
 
-**Shipped assets:** `veil-study.glb` (52 KB, Draco, 15,676 tris, alpha-blended,
-double-sided) · `veil-study.webp` (208 KB poster) · `veil-study-lqip.webp`
-(536 B blur placeholder).
+## Defects found and fixed during the build
 
-Three review-and-correct passes, documented in `blender/README.md`. The
-substantive error was panel width, not cloth-solver settings: a veil's fullness
-comes from gathering a wide panel onto a narrow comb, and at 1.15 m there was
-never enough fabric to flare. At 2.6 m the cathedral silhouette appears.
+Recorded because each was caught by actually looking, not by assuming:
 
-- Installed Blender 4.0.2 (it was not present). Two environment fixes were
-  needed and are documented in `blender/README.md`: `apt-get update` before
-  install, and `python3-numpy`, without which the glTF exporter fails at the
-  final step.
-- `blender/scripts/veil_study.py` runs end to end: flat cut pattern with
-  deliberate asymmetry → pinned comb → cloth sim over a non-exported
-  head/shoulder collision proxy → normal and UV cleanup → decimation to a web
-  budget → alpha-blended sheer material → three-point studio → Draco GLB +
-  Cycles poster.
-- Verified with a fast smoke run (2,400 polys → 126 KB GLB) before committing
-  to the full-resolution generation.
+1. **Empty hero on WebGL failure** — the poster faded on capability detection
+   rather than on the veil drawing a frame. Found by screenshot review.
+2. **drei fetched the Draco decoder from Google's CDN** at runtime, on the
+   critical path of the signature asset. Now self-hosted; zero external
+   requests remain.
+3. **Honeypot named itself** — validating it in Zod returned 400 with `website`
+   in `fieldErrors`, telling bots which field was the trap.
+4. **Draco silently no-opped** in Blender — every flag accepted, native encoder
+   absent, 800 KB output, no error. The build now asserts the extension landed.
+5. **`next@15.1.6` carried a published CVE** (CVE-2025-66478). Upgraded to 16.
+6. **Cascading render** closing the mobile panel in an effect rather than
+   during render.
+7. **Playwright resolved two copies of itself**, reported as "No tests found".
+8. **Five "photographs" were phone screenshots** — status bars, Instagram UI.
 
-## Blocked on
+## Blocked on account access only
 
-**The source material has still not reached this container.** The extracted
-folders referenced in the last instruction are not on disk, and the live site
-cannot be read from here.
+1. Create the Vercel project — import, **Root Directory → `lovestoryatelier-vercel`**,
+   then set Production Branch. See README.
+2. `NEXT_PUBLIC_SITE_URL` — until set, `robots.txt` disallows all, so previews
+   cannot be indexed by accident.
+3. `RESEND_API_KEY` / `ENQUIRY_TO_EMAIL` / `ENQUIRY_FROM_EMAIL` for delivery.
 
-**The one delivery route proven to work is GitHub.** `raw.githubusercontent.com`
-is reachable and the repository is readable. Commit the extracted theme folder
-and the image library to a branch of `ronanking/LoveStory` — any branch — and
-name it, and the content-dependent phases can start immediately.
-
-## Deliberately not done
-
-No page, component or content file has been written. With no source copy or
-photography, those would be invented brand voice, invented business facts and
-substituted imagery — all explicitly ruled out by the brief, and the middle one
-concerns a real trading business.
-
-Search results confirm the business publicly (Brisbane studio, European tulle,
-custom embroidery and monograms, cathedral and fingertip veils,
-`info@lovestoryatelier.com`). That is enough to confirm identity, and nowhere
-near enough to rebuild a site from — so it has not been used as content.
-
-## Next actions once unblocked
-
-1. Extract to `reference/`, complete the real audit: page/section map,
-   Liquid→React migration matrix, content-hash image dedup, focal points,
-   interaction inventory.
-2. Scaffold Next.js App Router + TypeScript strict, brand tokens, `next/font`
-   for the Cormorant/Jakarta pairing.
-3. Migrate copy into typed content files behind a data-adapter seam.
-4. Routes → motion system → enquiry form + API route.
-5. Wire the finished GLB into the R3F scene with the poster fallback.
-6. Playwright at 1440×1000, 1024×768, 390×844; review and iterate.
-7. `pnpm lint && pnpm typecheck && pnpm test && pnpm build`; README and
-   `docs/implementation-report.md`.
+Lighthouse is unrun: it needs a deployed URL, and headless Chrome here has no
+GPU, so local numbers would misrepresent the 3D layer.

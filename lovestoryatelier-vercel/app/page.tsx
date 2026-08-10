@@ -1,132 +1,300 @@
+import Image from "next/image";
+import Link from "next/link";
+
+import { HeroSlideshow } from "@/components/sections/HeroSlideshow";
 import { VeilStage } from "@/components/three/VeilStage";
+import {
+  atelierIntro,
+  categories,
+  finalCta,
+  hero,
+  marquee,
+  process,
+  testimonials,
+} from "@/content/site";
+import { image } from "@/content/images";
 
 import styles from "./page.module.css";
 
-const PALETTE = [
-  { name: "Cream", token: "--cream", hex: "#f7f4ed" },
-  { name: "Soft cream", token: "--soft-cream", hex: "#fcfbf8" },
-  { name: "Soft champagne", token: "--soft-champagne", hex: "#e8dcc4" },
-  { name: "Champagne", token: "--champagne", hex: "#c9ac82" },
-  { name: "Blush", token: "--blush", hex: "#d8b6a6" },
-  { name: "Sage", token: "--sage", hex: "#a3ad9b" },
-  { name: "Charcoal", token: "--charcoal", hex: "#1c1c1c" },
-] as const;
-
-const READY = [
-  "Blender silk-tulle veil — 52 KB Draco GLB, 208 KB poster, 536 B placeholder",
-  "Reproducible generation script with build-time asset assertions",
-  "Brand tokens, editorial type scale, Cormorant + Jakarta via next/font",
-  "WebGL capability gating, poster fallback, offscreen render pausing",
-  "Next.js 16 App Router, TypeScript strict, React Server Components",
-] as const;
-
-const AWAITING = [
-  "All page copy — homepage, collection, custom, about, contact",
-  "The veil catalogue: silhouettes, lengths, edges, materials",
-  "Photography — every image on the site",
-  "The bespoke enquiry form's exact fields and wording",
-  "Testimonials, founder story, FAQ",
-] as const;
-
 export default function HomePage() {
   return (
-    <main>
+    <>
+      {/* ───────────────────────────────────────────────────────── hero ── */}
       <section className={styles.hero}>
-        <VeilStage />
+        <div className={styles.heroCopy}>
+          <p className="eyebrow">{hero.eyebrow}</p>
 
-        <div className={styles.heroInner}>
-          <p className={styles.eyebrowLight}>Brisbane</p>
-          <h1 className={styles.wordmark}>
-            Love Story
-            <span className={styles.wordmarkLine}>Atelier</span>
+          <h1 className={styles.headline}>
+            {hero.headline}
+            <em className={styles.headlineItalic}>{hero.headlineItalic}</em>
           </h1>
-          <p className={styles.heroNote}>
-            The veil behind this type is a real Blender simulation — a cathedral
-            panel gathered onto a comb, draped under cloth physics, exported at
-            52&nbsp;KB.
-          </p>
+
+          <p className={styles.heroBody}>{hero.body}</p>
+
+          <div className={styles.heroCtas}>
+            <Link href={hero.primaryCta.href} className={styles.btnPrimary}>
+              {hero.primaryCta.label}
+            </Link>
+            <Link href={hero.secondaryCta.href} className={styles.btnGhost}>
+              {hero.secondaryCta.label}
+            </Link>
+          </div>
+
+          <dl className={styles.trust}>
+            {hero.trust.map((item) => (
+              <div key={item.label} className={styles.trustItem}>
+                <dt className={styles.trustValue}>{item.value}</dt>
+                <dd className={styles.trustLabel}>{item.label}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
 
-        <div className={styles.scrollHint} aria-hidden="true">
-          <span className={styles.scrollLine} />
+        <div className={styles.heroImage}>
+          <HeroSlideshow slides={hero.slides.map((slug) => image(slug))} />
+          <figure className={styles.cornerCard}>
+            <figcaption>
+              <span className={styles.cornerTag}>{hero.cornerCard.tag}</span>
+              <span className={styles.cornerTitle}>
+                {hero.cornerCard.title}
+              </span>
+              <span className={styles.cornerSub}>{hero.cornerCard.sub}</span>
+            </figcaption>
+          </figure>
         </div>
       </section>
 
+      {/* ────────────────────────────────────────────────────── marquee ── */}
+      <div className={styles.marquee} aria-hidden="true">
+        <div className={styles.marqueeRow}>
+          {[0, 1, 2].map((rep) =>
+            marquee.map((phrase, i) => (
+              <span key={`${rep}-${phrase}`} className={styles.marqueeItem}>
+                {i % 2 === 0 ? phrase : <em>{phrase}</em>}
+                <span className={styles.marqueeStar}>✦</span>
+              </span>
+            )),
+          )}
+        </div>
+      </div>
+      {/* The marquee is decorative motion; its words are stated in prose
+          elsewhere, so it is hidden from AT rather than read three times. */}
+
+      {/* ────────────────────────────────────────────────────── atelier ── */}
+      <section className={styles.section} id="atelier">
+        <div className={styles.atelierGrid}>
+          <div>
+            <p className="eyebrow">{atelierIntro.eyebrow}</p>
+            <h2 className={styles.sectionTitle}>
+              {atelierIntro.title}{" "}
+              <em className={styles.em}>{atelierIntro.titleItalic}</em>{" "}
+              {atelierIntro.titleEnd}
+            </h2>
+            {atelierIntro.body.map((paragraph) => (
+              <p key={paragraph.slice(0, 32)} className={styles.prose}>
+                {paragraph}
+              </p>
+            ))}
+            <div className={styles.atelierLinks}>
+              <Link href="/about" className={styles.btnGhost}>
+                Meet the atelier
+              </Link>
+              <Link href="/custom" className={styles.textLink}>
+                The bespoke process
+              </Link>
+            </div>
+          </div>
+
+          <div className={styles.atelierImages}>
+            {atelierIntro.images.map((item, i) => {
+              const img = image(item.slug);
+              return (
+                <figure
+                  key={item.slug}
+                  className={i === 0 ? styles.figureTall : styles.figure}
+                >
+                  <Image
+                    src={img.src}
+                    alt={img.alt}
+                    fill
+                    sizes="(max-width: 900px) 45vw, 22vw"
+                    placeholder="blur"
+                    blurDataURL={img.blurDataURL}
+                    className={styles.cover}
+                  />
+                  <figcaption className={styles.figureCaption}>
+                    {item.caption}
+                  </figcaption>
+                </figure>
+              );
+            })}
+            <blockquote className={styles.note}>
+              <p className={styles.noteQuote}>{atelierIntro.quote}</p>
+              <footer className={styles.noteSig}>
+                {atelierIntro.quoteAttribution}
+              </footer>
+            </blockquote>
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────── categories ── */}
       <section className={styles.section}>
         <div className={styles.sectionHead}>
-          <p className="eyebrow">Foundation</p>
-          <h2 className={styles.sectionTitle}>
-            The design system is built.
-            <em className={styles.em}> The content is not yet here.</em>
-          </h2>
-          <p className={styles.lede}>
-            This page is deliberately not a mock homepage. Writing invented
-            bridal copy or dropping in stock photography would misrepresent a
-            real business, so what follows is the foundation as it actually
-            stands — the palette, the type, and the 3D motif, all production
-            code.
-          </p>
+          <div>
+            <p className="eyebrow">{categories.eyebrow}</p>
+            <h2 className={styles.sectionTitle}>
+              {categories.title}{" "}
+              <em className={styles.em}>{categories.titleItalic}</em>.
+            </h2>
+          </div>
+          <Link href="/collection" className={styles.textLink}>
+            Shop everything
+          </Link>
         </div>
 
-        <div className={styles.palette}>
-          {PALETTE.map((swatch) => (
-            <figure key={swatch.token} className={styles.swatch}>
-              <div
-                className={styles.chip}
-                style={{ background: `var(${swatch.token})` }}
-              />
-              <figcaption>
-                <span className={styles.swatchName}>{swatch.name}</span>
-                <span className={styles.swatchHex}>{swatch.hex}</span>
-              </figcaption>
-            </figure>
+        <ul className={styles.categoryGrid}>
+          {categories.items.map((item, i) => {
+            const img = image(item.image);
+            return (
+              <li
+                key={item.name}
+                className={i === 0 ? styles.categoryTall : styles.category}
+              >
+                <Link href={item.href} className={styles.categoryLink}>
+                  <span className={styles.categoryImage}>
+                    <Image
+                      src={img.src}
+                      alt={img.alt}
+                      fill
+                      sizes="(max-width: 760px) 100vw, (max-width: 1100px) 50vw, 25vw"
+                      placeholder="blur"
+                      blurDataURL={img.blurDataURL}
+                      className={styles.cover}
+                    />
+                    <span className={styles.categoryIndex}>
+                      0{i + 1}
+                    </span>
+                  </span>
+                  <span className={styles.categoryBody}>
+                    <span className={styles.categoryName}>{item.name}</span>
+                    <span className={styles.categoryBlurb}>{item.blurb}</span>
+                    <span className={styles.categoryMeta}>{item.meta}</span>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      {/* ───────────────────────────────────────────────── testimonials ── */}
+      <section className={styles.sectionTinted}>
+        <div className={styles.sectionInner}>
+          <div className={styles.centered}>
+            <p className="eyebrow">{testimonials.eyebrow}</p>
+            <h2 className={styles.sectionTitle}>
+              {testimonials.title}{" "}
+              <em className={styles.em}>{testimonials.titleItalic}</em>
+            </h2>
+          </div>
+
+          <ul className={styles.testimonialGrid}>
+            {testimonials.items.map((item) => {
+              const img = image(item.image);
+              return (
+                <li key={item.author} className={styles.testimonial}>
+                  <figure className={styles.testimonialFigure}>
+                    <span className={styles.avatar}>
+                      <Image
+                        src={img.src}
+                        alt=""
+                        fill
+                        sizes="96px"
+                        placeholder="blur"
+                        blurDataURL={img.blurDataURL}
+                        className={styles.cover}
+                      />
+                    </span>
+
+                    <span
+                      className={styles.stars}
+                      role="img"
+                      aria-label={`${item.rating} out of 5 stars`}
+                    >
+                      {"★".repeat(item.rating)}
+                    </span>
+
+                    <blockquote className={styles.testimonialQuote}>
+                      {item.quote.map((paragraph) => (
+                        <p key={paragraph.slice(0, 24)}>{paragraph}</p>
+                      ))}
+                    </blockquote>
+
+                    <figcaption className={styles.testimonialAuthor}>
+                      {item.author}
+                    </figcaption>
+                  </figure>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </section>
+
+      {/* ────────────────────────────────────────────────────── process ── */}
+      <section className={styles.section} id="process">
+        <div className={styles.sectionHead}>
+          <div>
+            <p className="eyebrow">{process.eyebrow}</p>
+            <h2 className={styles.sectionTitle}>
+              {process.title}{" "}
+              <em className={styles.em}>{process.titleItalic}</em>
+            </h2>
+          </div>
+        </div>
+
+        {/* The connecting rule is the "thread" from the source's process
+            section, drawn as a single border rather than per-step lines. */}
+        <ol className={styles.steps}>
+          {process.steps.map((step, i) => (
+            <li key={step.name} className={styles.step}>
+              <span className={styles.stepIndex}>0{i + 1}</span>
+              <h3 className={styles.stepName}>{step.name}</h3>
+              <p className={styles.stepBody}>{step.body}</p>
+            </li>
           ))}
-        </div>
+        </ol>
+
+        <ul className={styles.assurances}>
+          {process.assurances.map((item) => (
+            <li key={item.name} className={styles.assurance}>
+              <h3 className={styles.assuranceName}>{item.name}</h3>
+              <p className={styles.assuranceBody}>{item.body}</p>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      <section className={styles.section}>
-        <div className={styles.typeSpecimen}>
-          <p className="eyebrow">Typography</p>
-          <p className={styles.specimenDisplay}>Handmade in Brisbane</p>
-          <p className={styles.specimenItalic}>from European tulle</p>
-          <p className={styles.specimenBody}>
-            Cormorant Garamond carries the display voice; Plus Jakarta Sans
-            handles body and interface. Both are self-hosted by next/font, so
-            there is no external request and no layout shift when they load.
-          </p>
-        </div>
-      </section>
-
-      <section className={styles.section}>
-        <div className={styles.status}>
-          <div className={styles.statusColumn}>
-            <p className="eyebrow">Ready</p>
-            <ul className={styles.list}>
-              {READY.map((item) => (
-                <li key={item} className={styles.listItem}>
-                  {item}
-                </li>
-              ))}
-            </ul>
+      {/* ──────────────────────────────────────────────────── final cta ── */}
+      <section className={styles.finalCta}>
+        <VeilStage />
+        <div className={styles.finalCtaInner}>
+          <h2 className={styles.finalCtaTitle}>
+            {finalCta.title}
+            <em className={styles.finalCtaItalic}>{finalCta.titleItalic}</em>
+          </h2>
+          <div className={styles.heroCtas}>
+            <Link href={finalCta.primary.href} className={styles.btnPrimary}>
+              {finalCta.primary.label}
+            </Link>
+            <Link href={finalCta.secondary.href} className={styles.btnGhost}>
+              {finalCta.secondary.label}
+            </Link>
           </div>
-          <div className={styles.statusColumn}>
-            <p className="eyebrow">Awaiting source material</p>
-            <ul className={styles.list}>
-              {AWAITING.map((item) => (
-                <li key={item} className={`${styles.listItem} ${styles.pending}`}>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <p className={styles.finalCtaMeta}>{finalCta.meta}</p>
         </div>
       </section>
-
-      <footer className={styles.footer}>
-        <p className={styles.footerNote}>
-          Love Story Atelier — Vercel rebuild, in progress.
-        </p>
-      </footer>
-    </main>
+    </>
   );
 }

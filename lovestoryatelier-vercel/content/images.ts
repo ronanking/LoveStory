@@ -62,10 +62,20 @@ const ALT: Record<string, string> = {
     "A lace veil resting on a bride's shoulder, in black and white",
 };
 
+/**
+ * Optional CDN base for photography.
+ *
+ * Empty by default, so images are served from `public/` exactly as before.
+ * Set NEXT_PUBLIC_IMAGE_BASE to serve them from elsewhere — used for preview
+ * deploys that cannot carry the binaries, and the seam a real image CDN would
+ * plug into later.
+ */
+const IMAGE_BASE = (process.env.NEXT_PUBLIC_IMAGE_BASE ?? "").replace(/\/$/, "");
+
 const BY_SLUG = new Map<string, SiteImage>(
   GENERATED_IMAGES.map((image) => [
     image.slug,
-    { ...image, alt: ALT[image.slug] ?? "" },
+    { ...image, src: `${IMAGE_BASE}${image.src}`, alt: ALT[image.slug] ?? "" },
   ]),
 );
 

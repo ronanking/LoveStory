@@ -1,0 +1,117 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: clamp(1.75rem, 4vh, 2.75rem);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--charcoal-12);
+  border-radius: 999px;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--step--1);
+  letter-spacing: 0.06em;
+  color: var(--charcoal-70);
+  cursor: pointer;
+  transition:
+    background var(--dur-mid) var(--ease-fabric),
+    color var(--dur-mid) var(--ease-fabric),
+    border-color var(--dur-mid) var(--ease-fabric);
+}
+
+.chip:hover { border-color: var(--champagne); }
+
+.chip[aria-pressed="true"] {
+  background: var(--charcoal);
+  border-color: var(--charcoal);
+  color: var(--soft-cream);
+}
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: clamp(1.25rem, 3vw, 2.25rem);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 620px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1040px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+
+.cardLink {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+
+.frame {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
+  background: var(--soft-champagne);
+}
+
+.frame img { transition: transform 1400ms var(--ease-fabric); }
+.cardLink:hover .frame img { transform: scale(1.04); }
+
+.tag {
+  position: absolute;
+  left: 0.6rem;
+  top: 0.6rem;
+  padding: 0.25rem 0.6rem;
+  background: rgba(252, 251, 248, 0.92);
+  font-size: var(--step--1);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--charcoal-70);
+  border-radius: 1px;
+}
+
+.body { display: flex; flex-direction: column; gap: 0.3rem; }
+
+.name {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  line-height: 1.15;
+}
+
+.spec, .edge {
+  font-size: var(--step--1);
+  color: var(--charcoal-70);
+}
+
+.edge em { font-style: italic; color: var(--charcoal-45); }
+
+.mto {
+  margin-top: 0.4rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--hairline);
+  font-size: var(--step--1);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--charcoal-45);
+}
+
+.empty {
+  padding: clamp(2rem, 6vh, 3.5rem) 0;
+  text-align: center;
+  color: var(--charcoal-45);
+}

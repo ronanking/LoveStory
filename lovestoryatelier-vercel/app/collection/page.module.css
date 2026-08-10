@@ -1,0 +1,66 @@
+.head {
+  padding: clamp(3rem, 8vh, 5rem) var(--gutter) clamp(1.5rem, 4vh, 2.5rem);
+  max-width: 82rem;
+  margin-inline: auto;
+}
+
+.title {
+  font-size: var(--step-3);
+  margin: clamp(0.6rem, 1.5vh, 1rem) 0 0;
+  max-width: 18ch;
+}
+
+.title em { font-style: italic; color: var(--charcoal-45); }
+
+.note {
+  margin-top: 1rem;
+  max-width: 46ch;
+  color: var(--charcoal-70);
+}
+
+.section {
+  padding: clamp(1.5rem, 4vh, 2.5rem) var(--gutter) clamp(3rem, 8vh, 5rem);
+  max-width: 82rem;
+  margin-inline: auto;
+}
+
+.rail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(1.75rem, 5vw, 3rem);
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
+  background: var(--soft-cream);
+}
+
+.railTitle {
+  font-size: var(--step-2);
+  margin: 0.5rem 0 0;
+}
+
+.railTitle em { font-style: italic; color: var(--charcoal-45); }
+
+.railBody {
+  margin-top: 0.8rem;
+  max-width: 52ch;
+  font-size: var(--step--1);
+  color: var(--charcoal-70);
+}
+
+.railCta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0.75rem 1.55rem;
+  background: var(--charcoal);
+  color: var(--soft-cream);
+  border-radius: 2px;
+  font-size: var(--step--1);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+}

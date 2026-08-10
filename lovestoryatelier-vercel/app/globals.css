@@ -112,3 +112,20 @@ canvas {
     scroll-behavior: auto !important;
   }
 }
+
+/* Skip link — visible only when focused. */
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: 0.5rem;
+  z-index: 100;
+  padding: 0.7rem 1.1rem;
+  background: var(--charcoal);
+  color: var(--soft-cream);
+  border-radius: 2px;
+  font-size: var(--step--1);
+  transform: translateY(-160%);
+  transition: transform var(--dur-mid) var(--ease-fabric);
+}
+
+.skip-link:focus-visible { transform: none; }

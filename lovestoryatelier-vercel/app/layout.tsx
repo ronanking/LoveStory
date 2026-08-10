@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 
+import { Footer } from "@/components/layout/Footer";
+import { Header } from "@/components/layout/Header";
+
 import "./globals.css";
 
 // Self-hosted by next/font at build time — no external request, no FOUT, and
@@ -35,7 +38,12 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en-AU" className={`${cormorant.variable} ${jakarta.variable}`}>
-      <body>{children}</body>
+      <body>
+        <a href="#main" className="skip-link">Skip to content</a>
+        <Header />
+        <main id="main">{children}</main>
+        <Footer />
+      </body>
     </html>
   );
 }

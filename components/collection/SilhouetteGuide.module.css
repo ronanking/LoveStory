@@ -1,0 +1,130 @@
+.guide {
+  background: var(--soft-cream);
+  border-block: 1px solid var(--hairline);
+}
+
+.inner {
+  padding: clamp(3.5rem, 10vh, 6.5rem) var(--gutter);
+  max-width: 82rem;
+  margin-inline: auto;
+}
+
+.head { text-align: center; max-width: 44rem; margin: 0 auto clamp(2rem, 5vh, 3rem); }
+
+.title {
+  font-size: var(--step-3);
+  margin: 0.6rem 0 0;
+}
+
+.title em { font-style: italic; color: var(--charcoal-45); }
+
+.intro {
+  margin-top: 0.9rem;
+  font-size: var(--step--1);
+  color: var(--charcoal-70);
+}
+
+.tablist {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: clamp(2rem, 5vh, 3rem);
+}
+
+.tab {
+  min-height: 44px;
+  padding: 0.5rem 1.1rem;
+  background: transparent;
+  border: 1px solid var(--charcoal-12);
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: var(--step--1);
+  letter-spacing: 0.08em;
+  color: var(--charcoal-70);
+  cursor: pointer;
+  transition:
+    background var(--dur-mid) var(--ease-fabric),
+    color var(--dur-mid) var(--ease-fabric),
+    border-color var(--dur-mid) var(--ease-fabric);
+}
+
+.tab:hover { border-color: var(--champagne); }
+
+.tab[aria-selected="true"] {
+  background: var(--charcoal);
+  border-color: var(--charcoal);
+  color: var(--soft-cream);
+}
+
+.stage {
+  display: grid;
+  gap: clamp(1.75rem, 5vw, 3.5rem);
+  grid-template-columns: 1fr;
+  align-items: center;
+}
+
+@media (min-width: 860px) {
+  .stage { grid-template-columns: 0.85fr 1fr; }
+}
+
+.photo {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--soft-champagne);
+}
+
+.image {
+  object-fit: cover;
+  object-position: 50% 22%;
+  animation: settle var(--dur-slow) var(--ease-fabric);
+}
+
+@keyframes settle {
+  from { opacity: 0; transform: scale(1.02); }
+  to { opacity: 1; transform: none; }
+}
+
+.panel { min-width: 0; }
+.panel:focus-visible { outline-offset: 8px; }
+
+.bar {
+  height: 2px;
+  background: var(--charcoal-12);
+  margin-bottom: 1.4rem;
+  overflow: hidden;
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  background: var(--champagne);
+  transition: width var(--dur-slow) var(--ease-fabric);
+}
+
+.name {
+  font-size: var(--step-2);
+  margin: 0;
+}
+
+.cm {
+  margin-top: 0.35rem;
+  font-size: var(--step--1);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--charcoal-45);
+}
+
+.body {
+  margin-top: 1.1rem;
+  max-width: 56ch;
+  color: var(--charcoal-70);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image { animation: none; }
+  .barFill { transition: none; }
+}

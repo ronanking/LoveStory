@@ -1,9 +1,41 @@
 node_modules/
+.next/
+out/
 dist/
 .env
 .env.local
 *.local
-__pycache__/
-*.pyc
-.pytest_cache/
-macromatch.db
+.vercel
+.DS_Store
+
+# Playwright
+test-results/
+playwright-report/
+
+# Extracted source archives — reference only, never shipped. Large, and the
+# originals live with the brand rather than in git.
+reference/
+
+# Regenerable Blender scene. veil_study.py is the source of truth; the .blend
+# is a 2.7 MB binary that churns on every run, so it is not tracked.
+# Recreate with: ./blender/scripts/build-veil.sh
+# The trailing * matters: Blender writes .blend1/.blend2 rollback backups
+# alongside the save, and they are just as large.
+blender/source/*.blend*
+
+# Cycles writes the poster as PNG; the site ships the WebP and the LQIP beside
+# it, so the 1.4 MB intermediate is not tracked.
+public/posters/*.png
+
+# Draco decoder is vendored from three at install time — see README.
+# Tracked deliberately so deploys do not depend on an external CDN.
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# Source material — 77 MB, preserved on the `source-assets` branch.
+# Repopulate with: git checkout origin/source-assets -- source
+reference/
+
+test-results/
+playwright-report/

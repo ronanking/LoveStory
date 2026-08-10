@@ -1,103 +1,174 @@
-# MacroMatch AU
+# Love Story Atelier — Vercel rebuild
 
-An Australian calorie/macro tracker with one differentiator: instead of only
-logging what you ate, it answers **"what can I still eat tonight?"** — filtering
-real fast-food and supermarket products against whatever's left of your daily
-macro budget.
+An independent Next.js rebuild of the Love Story Atelier site, with no runtime
+dependency on Shopify, Liquid, Shopify routes, APIs or hosting.
 
-This repo continues the design/prototyping phase handed off in
-[`docs/HANDOFF.md`](docs/HANDOFF.md). The prototype artifacts it grew from are
-kept in [`prototypes/`](prototypes/) for reference.
+> **Current state.** The application, design system and 3D veil are built and
+> deploy cleanly. **The site's content is not in yet** — copy, photography and
+> the veil catalogue are still pending source material. See
+> [`PROGRESS.md`](PROGRESS.md) and [`docs/source-audit.md`](docs/source-audit.md).
+> The homepage presents the foundation honestly rather than mocking up a
+> homepage with invented copy, and is set `noindex` until real content lands.
 
-## Run it
+## Local setup
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
-npm run build      # production build in dist/
+npm run dev          # http://localhost:3000
 ```
 
-No backend needed — out of the box the app runs on a bundled local food
-database and persists everything (name, targets, wizard answers, diary) to
-`localStorage`, keyed by date so each day starts fresh.
+| Script | Does |
+|---|---|
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm start` | Serve the production build |
+| `npm run lint` | ESLint (flat config) |
+| `npm run typecheck` | `tsc --noEmit`, strict |
+| `npm test` | Playwright end-to-end |
+| `npm run veil` | Regenerate the 3D veil in Blender |
 
-## What's in the app
+Requires Node 20+. All of lint, typecheck and build currently pass.
 
-- **Diary (Today)** — greeting, calories left, macro ledger with dotted
-  leaders, the **Protein Pressure** dial (`remaining protein / remaining
-  calories × 100`, banded cruise → tight squeeze), and the food diary.
-- **EAT (flagship)** — the centre-button sheet: search, category + venue
-  filters, optional 10% wiggle room, foods ranked by "on protein pace" then
-  fit, over-budget items shown greyed with the exact overshoot. Tap to log.
-  Includes custom quick-add that cross-checks stated calories against 4/4/9
-  and flags mismatches (never silently fixes them).
-- **Setup wizard** (Profile → Calculate my targets) — Mifflin-St Jeor, or
-  Katch-McArdle when a body fat estimate is supplied (protein then prescribed
-  per kg lean mass), activity factors, 7 goals with a two-question
-  recommender, 4 macro styles — and the full working printed at the end.
-- **Learn** — the macro handbook: six sections on energy balance, protein,
-  carbs, fat, body fat %, and muscle.
-- **Profile** — name, editable targets with the 4/4/9 balance check and the
-  arithmetic receipt.
-
-### Product rules (from the handoff — don't break these)
-
-1. No calorie/macro slider on the home screen; targets are set once and
-   "remaining" is purely `target − diary`.
-2. Protein/carbs 4 cal/g, fat 9 cal/g — the app always shows its arithmetic
-   and flags (never silently fixes) mismatches.
-3. No forbidden foods, no streaks/shame, no black-box numbers.
-4. Never invent nutrition data — missing data displays as missing.
-5. Australian: AU chains and supermarkets, AU spelling, kJ-first data
-   convention in the pipeline.
-
-## Wiring up Supabase (optional, for the real food database)
-
-1. In the Supabase SQL editor run, in order:
-   - [`supabase/schema_ingest.sql`](supabase/schema_ingest.sql) — foods +
-     ingestion tables (seeds the `afcd_r2` source row).
-   - [`supabase/schema_app.sql`](supabase/schema_app.sql) — RLS read policies
-     on `foods`, plus `profiles` and `diary_entries` tables for auth-backed
-     persistence (frontend wiring for auth is a next step).
-2. Import real food data with the pipeline in [`ingest/`](ingest/):
-   ```bash
-   cd ingest
-   pip install -r requirements.txt
-   # download the AFCD Release 2 workbook from foodstandards.gov.au, then:
-   export SUPABASE_URL=https://<project>.supabase.co
-   export SUPABASE_SERVICE_ROLE_KEY=<service key>   # server-side only
-   python -m macromatch_ingest.cli afcd afcd_release2.xlsx --supabase
-   ```
-   See [`ingest/README.md`](ingest/README.md) and
-   [`docs/SOURCES_REPORT.md`](docs/SOURCES_REPORT.md) for the source
-   landscape, licensing posture and roadmap to 100k+ products.
-3. Copy `.env.example` to `.env` and fill in `VITE_SUPABASE_URL` and
-   `VITE_SUPABASE_ANON_KEY`. The app auto-detects the config and reads
-   non-suspect foods from the table (falling back to the local DB on any
-   error). Rows missing a core macro are excluded, not guessed at.
-
-## Layout
+## Architecture
 
 ```
-src/                  Vite + React app (the ledger design system)
-  components/         TodayView, EatSheet, SetupWizard, LearnView, ProfileView…
-  lib/                calc (plan maths, protein pressure), storage, foodSource
-  data/               local seed food DB, Learn content
-supabase/             schema_ingest.sql + schema_app.sql
-ingest/               Python ingestion pipeline (AFCD importer, 21 tests)
-docs/                 HANDOFF.md, SOURCES_REPORT.md
-prototypes/           the original single-file prototypes this app grew from
+app/                 App Router. Server Components by default.
+  layout.tsx         Fonts (next/font), metadata
+  page.tsx           Homepage
+  globals.css        Brand tokens — the single source of palette and type
+  icon.svg           Favicon
+components/three/    The signature 3D veil
+  VeilStage.tsx      Capability gate + poster fallback (client)
+  VeilScene.tsx      React Three Fiber scene (client, dynamically imported)
+lib/                 Hooks and utilities
+public/models/       veil-study.glb — Draco, 52 KB
+public/posters/      Blender poster + LQIP placeholder
+public/draco/gltf/   Self-hosted Draco decoder (see below)
+blender/             Veil generation pipeline
+macromatch/          Unrelated project kept in this repo (not part of the build)
+docs/                Audit and implementation notes
 ```
 
-## Next steps
+Client components exist only where interaction requires them: the veil stage,
+the WebGL scene, and the capability hook. Everything else is a Server
+Component.
 
-- Supabase auth + syncing diary/targets to `profiles` / `diary_entries`
-  (schema is ready; frontend wiring pending).
-- Server-side food search once volume outgrows a single client-side fetch.
-- AUSNUT + fast-food PDF importers (see `docs/SOURCES_REPORT.md` priorities).
-- A history view over the date-keyed diary.
+### Where content will live
 
-MacroMatch provides general nutrition information and calculation tools — not
-medical or dietary advice. Nutrient reference data includes the Australian Food
-Composition Database (FSANZ); branded values approximate published nutrition
-information — check current labels.
+Content is **not** in the components. When the source material arrives it lands
+in typed modules under `content/`, read through a thin data adapter, so a CMS or
+commerce backend can be swapped in later without touching the UI.
+
+## Design tokens
+
+All brand values are CSS custom properties in `app/globals.css` — palette, type
+scale, rhythm and motion easing. Change them there and the whole site follows.
+Nothing hardcodes a hex value.
+
+Type is Cormorant Garamond (display) and Plus Jakarta Sans (body), self-hosted
+by `next/font` at build time — no external request, no layout shift.
+
+## The 3D veil
+
+The signature motif is a real Blender cloth simulation, not a shader trick.
+Generation and regeneration are documented in
+[`blender/README.md`](blender/README.md); the short version is:
+
+```bash
+npm run veil          # or ./blender/scripts/build-veil.sh --fast
+```
+
+Web integration constraints, all enforced in `components/three/`:
+
+- **Dynamically imported**, `ssr: false` — three.js compiles to its own ~896 KB
+  chunk that is never part of the initial bundle or the critical path.
+- **Poster-first.** The Blender render paints immediately; the WebGL canvas
+  fades in over it only after the veil has genuinely drawn a frame. Any failure
+  — dead driver, blocked context, missing GLB — leaves the poster in place
+  rather than an empty hero.
+- **Not mounted at all** under `prefers-reduced-motion`, on coarse pointers, on
+  fewer than 4 cores, under Data Saver, or without a usable WebGL context.
+- **Render loop paused** whenever the canvas is offscreen or the tab is hidden.
+- **`aria-hidden`, `pointer-events: none`** — decorative, never in the way of
+  content or keyboard focus.
+
+### Draco decoder
+
+`public/draco/gltf/` is vendored from `three/examples/jsm/libs/draco/gltf/`.
+drei otherwise fetches the decoder from Google's CDN at runtime, which puts a
+third-party request on the critical path of the signature asset. Serving it
+locally removes the only external request on the page.
+
+Refresh it after a major `three` upgrade:
+
+```bash
+cp node_modules/three/examples/jsm/libs/draco/gltf/draco_{decoder.js,decoder.wasm,wasm_wrapper.js} public/draco/gltf/
+```
+
+## Environment variables
+
+Copy `.env.example` to `.env.local`. **The application builds and runs with all
+of these unset** — the enquiry form degrades to a clear failure state rather
+than a fake success.
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_SITE_URL` | For correct canonicals | Canonical/OG base URL |
+| `RESEND_API_KEY` | For email delivery | Resend API key |
+| `ENQUIRY_TO_EMAIL` | For email delivery | Where enquiries are sent |
+| `ENQUIRY_FROM_EMAIL` | For email delivery | Verified sender on your domain |
+
+Set them in Vercel under **Settings → Environment Variables**. Never commit
+real values — `.env.example` carries names only.
+
+## Deploying to Vercel
+
+The app lives at the **repository root**, so a default import needs no
+configuration:
+
+1. <https://vercel.com/new> → **Import** `ronanking/LoveStory`
+2. Framework preset: **Next.js** (auto-detected). Leave everything at default —
+   Root Directory stays as the repository root.
+3. Add any environment variables from the table above.
+4. **Deploy.**
+
+Every later push to the default branch rebuilds and republishes; other branches
+get their own preview URLs.
+
+### If an existing project still builds the wrong thing
+
+A project created before this restructure may have a stale **Root Directory**
+pointing at `lovestoryatelier-vercel/`, which no longer exists. Clear it back
+to the repository root in **Settings → General → Root Directory**, then
+redeploy.
+
+### Custom domain
+
+**Settings → Domains** → add `lovestoryatelier.com`, then point the registrar
+at Vercel as instructed there.
+
+`robots.txt` disallows everything until `NEXT_PUBLIC_SITE_URL` is set, so
+preview deployments cannot be indexed by accident. Set it when the site should
+be found, and remove the `robots` block in `app/layout.tsx`.
+
+## About `macromatch/`
+
+This repository also contains **MacroMatch**, an unrelated Vite + React project,
+kept under [`macromatch/`](macromatch/). It has its own `package.json` and
+toolchain, is excluded from this project's ESLint config, and is not part of
+this build. It is untouched apart from the move, and its full history is
+preserved.
+
+## Replacing local content with a CMS or commerce backend
+
+The UI reads content through an adapter rather than importing data directly, so
+a backend swap is a change in one place:
+
+1. Keep the existing types as the contract.
+2. Reimplement the adapter functions against the new source (Sanity, Contentful,
+   Shopify Storefront API, anything) — they may be async; the call sites are
+   Server Components already.
+3. Leave the components untouched.
+
+Enquiry submission is likewise isolated behind an email provider abstraction, so
+moving from Resend to another provider or a CRM is a single module.

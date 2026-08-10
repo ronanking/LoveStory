@@ -1,0 +1,167 @@
+/*
+ * Love Story Atelier — brand tokens.
+ *
+ * Palette and type pairing carried over from the existing theme. These are the
+ * foundation the rebuilt site is designed against; nothing here is invented.
+ */
+
+:root {
+  /* Palette */
+  --cream: #f7f4ed;
+  --soft-cream: #fcfbf8;
+  --charcoal: #1c1c1c;
+  --blush: #d8b6a6;
+  --champagne: #c9ac82;
+  --soft-champagne: #e8dcc4;
+  --sage: #a3ad9b;
+
+  /* Derived, for restraint rather than new hues */
+  --charcoal-70: rgba(28, 28, 28, 0.7);
+  --charcoal-45: rgba(28, 28, 28, 0.45);
+  --charcoal-12: rgba(28, 28, 28, 0.12);
+  --hairline: rgba(28, 28, 28, 0.09);
+
+  /* Type */
+  --font-display: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-body: var(--font-jakarta), "Plus Jakarta Sans", system-ui, sans-serif;
+
+  /* A modest scale — editorial layouts want few sizes used confidently. */
+  --step--1: clamp(0.78rem, 0.76rem + 0.1vw, 0.84rem);
+  --step-0: clamp(0.95rem, 0.92rem + 0.15vw, 1.05rem);
+  --step-1: clamp(1.2rem, 1.1rem + 0.5vw, 1.5rem);
+  --step-2: clamp(1.6rem, 1.35rem + 1.2vw, 2.4rem);
+  --step-3: clamp(2.2rem, 1.6rem + 2.9vw, 4.4rem);
+  --step-4: clamp(2.8rem, 1.8rem + 4.6vw, 6.2rem);
+
+  /* Rhythm */
+  --gutter: clamp(1.25rem, 0.9rem + 1.8vw, 3.5rem);
+  --measure: 62ch;
+
+  /* Motion — fabric settles, it does not bounce. */
+  --ease-fabric: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-slow: 1100ms;
+  --dur-mid: 620ms;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--charcoal);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.65;
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  line-height: 1.08;
+  letter-spacing: -0.012em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+img,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+/* Focus that is visible without being ugly — never removed. */
+:focus-visible {
+  outline: 2px solid var(--charcoal);
+  outline-offset: 3px;
+}
+
+/* The eyebrow/label voice used throughout the brand. */
+.eyebrow {
+  font-size: var(--step--1);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--charcoal-45);
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Skip link — visible only when focused. */
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: 0.5rem;
+  z-index: 100;
+  padding: 0.7rem 1.1rem;
+  background: var(--charcoal);
+  color: var(--soft-cream);
+  border-radius: 2px;
+  font-size: var(--step--1);
+  transform: translateY(-160%);
+  transition: transform var(--dur-mid) var(--ease-fabric);
+}
+
+.skip-link:focus-visible { transform: none; }
+
+/* FAQ disclosures — native <details> so they work without JavaScript and
+   are keyboard-operable for free. */
+.faq-item {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.faq-item summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 1.15rem 2rem 1.15rem 0;
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  position: relative;
+}
+
+.faq-item summary::-webkit-details-marker { display: none; }
+
+.faq-item summary::after {
+  content: "+";
+  position: absolute;
+  right: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--champagne);
+  font-family: var(--font-body);
+}
+
+.faq-item[open] summary::after { content: "–"; }
+
+.faq-item p {
+  padding: 0 0 1.25rem;
+  max-width: 62ch;
+  color: var(--charcoal-70);
+  font-size: var(--step-0);
+}

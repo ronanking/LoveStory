@@ -1,0 +1,25 @@
+.head {
+  padding: clamp(3rem, 8vh, 5rem) var(--gutter) clamp(1.5rem, 4vh, 2.5rem);
+  max-width: 82rem;
+  margin-inline: auto;
+}
+.title { font-size: var(--step-3); margin: clamp(0.6rem,1.5vh,1rem) 0 0; max-width: 20ch; }
+.title em { font-style: italic; color: var(--charcoal-45); }
+.lede { margin-top: 1rem; max-width: 52ch; color: var(--charcoal-70); }
+.section { padding: clamp(2.5rem,7vh,4.5rem) var(--gutter); max-width: 82rem; margin-inline: auto; }
+.tinted { background: var(--soft-cream); border-block: 1px solid var(--hairline); }
+.split { display: grid; gap: clamp(2rem,5vw,4rem); grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 880px) { .split { grid-template-columns: 0.9fr 1.1fr; } }
+.portrait { position: relative; aspect-ratio: 4/5; border: 1px solid var(--hairline); border-radius: 2px; overflow: hidden; }
+.cover { object-fit: cover; }
+.prose { margin-top: 1rem; max-width: 56ch; color: var(--charcoal-70); }
+.sig { margin-top: 1.6rem; font-family: var(--font-display); font-style: italic; font-size: var(--step-2); }
+.sigRole { font-size: var(--step--1); letter-spacing: .14em; text-transform: uppercase; color: var(--charcoal-45); margin-top: .3rem; }
+.cards { list-style: none; margin: clamp(2rem,5vh,3rem) 0 0; padding: 0; display: grid; gap: clamp(1.25rem,3vw,2rem); grid-template-columns: 1fr; }
+@media (min-width: 760px) { .cards { grid-template-columns: repeat(3,1fr); } }
+.card { padding: clamp(1.35rem,3vw,1.9rem); border: 1px solid var(--hairline); border-radius: 2px; background: var(--cream); }
+.cardLabel { font-size: var(--step--1); letter-spacing: .16em; text-transform: uppercase; color: var(--champagne); }
+.cardTitle { font-size: var(--step-1); margin: .5rem 0 .6rem; }
+.cardBody { font-size: var(--step--1); color: var(--charcoal-70); }
+.gallery { display: grid; gap: clamp(.75rem,2vw,1.25rem); grid-template-columns: repeat(auto-fit,minmax(min(100%,15rem),1fr)); margin-top: clamp(2rem,5vh,3rem); }
+.tile { position: relative; aspect-ratio: 3/4; border: 1px solid var(--hairline); border-radius: 2px; overflow: hidden; }
